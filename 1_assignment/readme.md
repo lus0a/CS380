@@ -1,6 +1,5 @@
 --------------------------------------------------------------------
-# CS380 GPU and GPGPU Programming
-### Querying the Graphics Card (OpenGL and CUDA)
+## Querying the Graphics Card (OpenGL and CUDA)
 ### Contacts: peter.rautek@kaust.edu.sa
 --------------------------------------------------------------------
   
