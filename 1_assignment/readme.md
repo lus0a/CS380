@@ -57,7 +57,6 @@ Query and print CUDA functionality:
  
 
 4. GLFW
-
 Read up on GLFW. Try to implement the callbacks for mouse interaction and keyboard events.
 Simply print to the console that you have detected a mouse move/click or a keyboard event.
 
