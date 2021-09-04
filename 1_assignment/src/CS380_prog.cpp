@@ -20,6 +20,10 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 
+//cursor position
+float cursor_x;
+float cursor_y;
+
 // window size
 const unsigned int gWindowWidth = 512;
 const unsigned int gWindowHeight = 512;
@@ -101,6 +105,42 @@ bool queryGPUCapabilitiesOpenGL()
 	// - maximum 3D texture size
 	// - maximum number of draw buffers
 	// =============================================================================
+	const GLubyte *vendor = glGetString( GL_VENDOR );
+	const GLubyte *renderer = glGetString( GL_RENDERER );
+	const GLubyte *version = glGetString( GL_VERSION );
+	
+	GLint major, minor;
+	glGetIntegerv( GL_MAJOR_VERSION, &major );
+	glGetIntegerv( GL_MINOR_VERSION, &minor );
+
+	printf( "----- OpenGL version and extensions ----- \n");
+	printf( "GL Vendor   : %s\n", vendor );
+	printf( "GL Renderer : %s\n", renderer );
+	printf( "GL Version  : %s\n", version );
+
+	GLint nExtensions;
+	glGetIntegerv( GL_NUM_EXTENSIONS, &nExtensions);
+	for( int i = 0; i < nExtensions; i++ )
+		printf( "%s\n", glGetStringi( GL_EXTENSIONS, i ) );
+	
+	GLint max_vertex_shader_attri, max_varing_floats, num_tex_image_units_vertex, num_tex_image_units_fragment, max_2D_tex, max_3D_tex, max_draw_buf;
+
+	glGetIntegerv( GL_MAX_VERTEX_ATTRIBS, &max_vertex_shader_attri );
+	glGetIntegerv( GL_MAX_VARYING_FLOATS, &max_varing_floats );
+	glGetIntegerv( GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &num_tex_image_units_vertex );
+	glGetIntegerv( GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &num_tex_image_units_fragment );
+	glGetIntegerv( GL_MAX_TEXTURE_SIZE, &max_2D_tex );
+	glGetIntegerv( GL_MAX_3D_TEXTURE_SIZE, &max_3D_tex );
+	glGetIntegerv( GL_MAX_DRAW_BUFFERS, &max_draw_buf );
+
+	printf( "----- GPU OpenGL limits ----- \n");
+	printf( "Maximum number of vertex shader attributes	: %d\n", max_vertex_shader_attri );
+	printf( "Maximum number of varying floats : %d\n", max_varing_floats );
+	printf( "Number of texture image units in fragment shader : %d\n", num_tex_image_units_vertex );
+	printf( "Number of texture image units in vertex shader : %d\n", num_tex_image_units_fragment );
+	printf( "Maximum 2D texture size : %d\n", max_2D_tex );
+	printf( "Maximum 3D texture size : %d\n", max_3D_tex );
+	printf( "Maximum number of draw buffers : %d\n", max_draw_buf );
 
 	return true;
 }
@@ -108,6 +148,8 @@ bool queryGPUCapabilitiesOpenGL()
 // query GPU functionality we need for CUDA, return false when not available
 bool queryGPUCapabilitiesCUDA()
 {
+	printf( "----- CUDA functionality ----- \n");
+
 	// Device Count
 	int devCount;
 
@@ -134,6 +176,22 @@ bool queryGPUCapabilitiesCUDA()
 	//   - warp size (in threads)
 	//   - max threads per block
 	// =============================================================================
+
+	cudaDeviceProp  prop;
+	for (int i = 0; i < devCount; ++i)
+	{
+		cudaGetDeviceProperties( &prop, 0 );
+		printf( "Device Name:  %s\n", prop.name );
+		printf( "Compute capability:  %d.%d\n", prop.major, prop.minor );
+		printf( "Multi-processor count:  %d\n", prop.multiProcessorCount );
+		printf( "Clock rate:  %d\n", prop.clockRate );
+		printf( "Total global memory:  %lu\n", prop.totalGlobalMem );
+		printf( "Shared memory per block:  %lu\n", prop.sharedMemPerBlock );
+		printf( "Num registers per block:  %d\n", prop.regsPerBlock );
+		printf( "Warp size in threads:  %d\n", prop.warpSize );
+		printf( "Max threads per block:  %d\n", prop.maxThreadsPerBlock );
+	}
+
 
 	return true;
 }
@@ -206,6 +264,29 @@ void renderFrame()
 //In general try to understand the anatomy of a typical graphics application!
 // =============================================================================
 
+void cursor_callback( GLFWwindow* window, double xpos, double ypos )
+{
+	cursor_x = xpos;
+	cursor_y = ypos;
+}
+
+void mouse_callback( GLFWwindow* window, int button, int action, int mods )
+{
+	if ( button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS )
+		printf( "Left button is clicked and cursor location is (%f,%f)\n", cursor_x, cursor_y );
+	else if ( button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS )
+		printf( "Right button is clicked and cursor location is (%f,%f)\n", cursor_x, cursor_y );
+}
+
+void key_callback( GLFWwindow* window, int key, int scancode, int action, int mods )
+{
+	if ( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS )
+	{
+		glfwSetWindowShouldClose( window, GLFW_TRUE );
+		printf("Key ESC is pressed, the window is closed\n");
+	}
+}
+
 // entry point
 int main(int argc, char** argv)
 {
@@ -244,6 +325,9 @@ int main(int argc, char** argv)
 	//Implement mouse and keyboard callbacks!
 	//Print information about the events on std::cout
 	// =============================================================================
+	glfwSetCursorPosCallback(window, cursor_callback);	
+	glfwSetMouseButtonCallback(window, mouse_callback);
+	glfwSetKeyCallback(window, key_callback);
 
 	// make context current (once is sufficient)
 	glfwMakeContextCurrent(window);

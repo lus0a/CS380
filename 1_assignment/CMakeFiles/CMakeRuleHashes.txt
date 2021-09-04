@@ -1,0 +1,3 @@
+# Hashes of file build rules.
+b684f6db7e13b818815284539a34d35b /home/lus0a/CS380/cs380-2021/common/glfw-3.3/build/CMakeFiles/uninstall
+56632f63ae3624170bafd4ef308ce8c7 /home/lus0a/CS380/cs380-2021/common/glfw-3.3/build/docs/CMakeFiles/docs
