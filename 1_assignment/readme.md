@@ -1,6 +1,5 @@
 --------------------------------------------------------------------
-# CS380 GPU and GPGPU Programming
-### Programming Assignment #1 --- Querying the Graphics Card (OpenGL and CUDA)
+## Querying the Graphics Card (OpenGL and CUDA)
 ### Contacts: peter.rautek@kaust.edu.sa
 --------------------------------------------------------------------
   
@@ -53,11 +52,10 @@ Query and print CUDA functionality:
 	* shared memory per block
 	* num registers per block
 	* warp size (in threads) 
-	* * max threads per block
+	* max threads per block
  
 
 4. GLFW
-
 Read up on GLFW. Try to implement the callbacks for mouse interaction and keyboard events.
 Simply print to the console that you have detected a mouse move/click or a keyboard event.
 
