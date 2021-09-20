@@ -27,6 +27,7 @@
 // framework includes
 #include "vbocube.h"
 #include "vbomesh.h"
+#include "vbodisc.h"
 
 // include glslprogram
 #include "glslprogram.h"
@@ -42,15 +43,18 @@ float cursor_y;
 //object scale factor
 int objsf=1;
 int radians=0;
+float angle=0.0;
 
-//shader option
-int shaderOption;
+//shader option  0:basic  1:Gouraud   2:Phong   3:Stripes   4:Lattice   5:Toon   6:Fog    7.bump
+int shaderOption=6;
 
 // a simple cube
 VBOCube *m_pCube;
 
 // a more complex mesh
 VBOMesh *m_pMesh;
+
+VBODisc *m_pDisc;
 
 // glsl program 
 GLSLProgram *prog;
@@ -192,13 +196,43 @@ void setupScene()
 	// Try to understand what it does and how it is used. 
 	// Afterwards, you can ether use it for your purposes or decide to implement your own glsl-program handling.
 	prog = new GLSLProgram();
-	prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/basicVertex.vs");
-	prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/basicFrag.fs");
-	//prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/gouraud.vs");
-	//prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/gouraud.fs");
-	//prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/phong.vs");
-	//prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/phong.fs");
-
+	
+	if ( shaderOption == 0 )
+	{
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/basicVertex.vs");
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/basicFrag.fs");
+	}
+	else if ( shaderOption == 1 )
+	{
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/gouraud.vs");
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/gouraud.fs");
+	}
+	else if ( shaderOption == 2 )
+	{
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/phong.vs");
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/phong.fs");
+	}
+	else if ( shaderOption == 3 )
+	{
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/stripes.vs");
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/stripes.fs");
+	}
+	else if ( shaderOption == 4 )
+	{
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/lattice.vs");
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/lattice.fs");
+	}
+	else if ( shaderOption == 5 )
+	{
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/toon.vs");
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/toon.fs");
+	}
+	else if ( shaderOption == 6 )
+	{
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/fog.vs");
+		prog->compileShader("/home/lus0a/CS380/cs380-2021/2_assignment/src/shader/fog.fs");
+	}
+	
 	prog->link();
 	printf("compile and link success.\n");
 
@@ -213,7 +247,8 @@ void setupScene()
 	// Now cubes and spheres are all nice - but if you want to render anything more complex you will need some kind of CAD model (i.e., essentially a triangle mesh stored in a file). 
 	// TODO: Load and render a 'obj' file:
 
-	//m_pMesh = new VBOMesh("/home/lus0a/CS380/cs380-2021/2_assignment/src/data/bs_ears.obj",false,true,true);
+	m_pMesh = new VBOMesh("/home/lus0a/CS380/cs380-2021/2_assignment/src/data/bs_ears.obj",false,true,true);
+	m_pDisc = new VBODisc(1.0f, 0.1f, 50);
 }
 
  
@@ -265,9 +300,91 @@ void renderFrame()
 	prog->setUniform("model", model);
 	prog->setUniform("view", view);
 	prog->setUniform("projection", projection);
-	
-	m_pCube->render();
+
+	glm::mat4 mv = view*model;
+	prog->setUniform("ModelViewMatrix", mv);
+	prog->setUniform( "NormalMatrix", mat3( vec3(mv[0]), vec3(mv[1]), vec3(mv[2]) ) );
+	prog->setUniform("ProjectionMatrix", projection);
+	prog->setUniform("MVP", projection * mv);
+
+
+	  /*  stripes setting */
+ 	// prog->setUniform("Scale", 10.0f);
+	// prog->setUniform("Fuzz", 0.1f);
+	// prog->setUniform("StripeColor", 1.0f, 0.0f, 0.0f);
+	// prog->setUniform("BackColor", 0.0f, 0.0f, 0.0f);
+	// prog->setUniform("Width", 0.2f);
+	// angle = 0.3f;
+ 	// vec4 lightPos = vec4(10.0f * cos(angle), 10.0f, 10.0f * sin(angle), 1.0f);
+ 	// prog->setUniform("LightPosition", view * lightPos);
+ 	// prog->setUniform("LightColor", 0.9f, 0.9f, 0.9f);
+ 	// prog->setUniform("EyePosition", 0.0f, 0.0f, 1.0f);
+ 	// prog->setUniform("Kd", 0.9f, 0.5f, 0.3f);
+ 	// prog->setUniform("Ambient", 0.9f * 0.3f, 0.5f * 0.3f, 0.3f * 0.3f);
+	// prog->setUniform("Specular", 0.0, 1.0f, 0.5f);
+
+	  /*  lattice setting */
+ 	// prog->setUniform("Scale",vec2(10.0f,10.0f));
+	// prog->setUniform("Threshold", vec2(0.5f, 0.5f));
+	// prog->setUniform("SurfaceColor", 1.0f, 0.0f, 0.0f);
+	// angle = 0.3f;
+ 	// vec4 lightPos = vec4(10.0f * cos(angle), 10.0f, 10.0f * sin(angle), 1.0f);
+ 	// prog->setUniform("LightPosition", view * lightPos);
+ 	// prog->setUniform("LightColor", 0.9f, 0.9f, 0.9f);
+ 	// prog->setUniform("EyePosition", 0.0f, 0.0f, 1.0f);
+	// prog->setUniform("Specular", 0.0, 1.0, 0.5);
+ 	// prog->setUniform("Kd", 0.9f, 0.5f, 0.3f);
+ 	// prog->setUniform("Ambient", 0.9f * 0.3f, 0.5f * 0.3f, 0.3f * 0.3f);
+
+	/*gourand and phond setting */
+ 	// vec4 worldLight = vec4(-5.0f,5.0f,2.0f,1.0f);
+ 	// prog->setUniform("Material.Kd", 0.9f, 0.5f, 0.3f);
+ 	// prog->setUniform("Light.Ld", 1.0f, 1.0f, 1.0f);
+ 	// prog->setUniform("Light.Position", view * worldLight );
+ 	// prog->setUniform("Material.Ka", 0.9f, 0.5f, 0.3f);
+ 	// prog->setUniform("Light.La", 0.4f, 0.4f, 0.4f);
+ 	// prog->setUniform("Material.Ks", 0.8f, 0.8f, 0.8f);
+ 	// prog->setUniform("Light.Ls", 1.0f, 1.0f, 1.0f);
+ 	// prog->setUniform("Material.Shininess", 100.0f);
+
+	/* toon setting  */
+	// angle = 1.4;
+	// prog->setUniform("Light.intensity", vec3(0.9f,0.9f,0.9f) );
+ 	// vec4 lightPos = vec4(10.0f * cos(angle), 10.0f, 10.0f * sin(angle), 1.0f);
+ 	// prog->setUniform("Light.Position", view * lightPos);
+	// prog->setUniform("Light.L", 1.0f, 1.0f, 1.0f);
+ 	// prog->setUniform("Material.Kd", 0.9f, 0.5f, 0.3f);
+ 	// prog->setUniform("Material.Ka", 0.9f * 0.3f, 0.5f * 0.3f, 0.3f * 0.3f);
+
+	/* fog setting */
+	// prog->setUniform("Light.La", vec3(0.9f,0.9f,0.9f) );
+ 	// prog->setUniform("Fog.MaxDist", 30.0f );
+ 	// prog->setUniform("Fog.MinDist", 1.0f );
+ 	// prog->setUniform("Fog.Color", vec3(0.5f,0.5f,0.5f) );
+	// angle += 0.01f;
+	// if(angle > 3.14) angle = 0.0f;
+ 	// vec4 lightPos = vec4(10.0f * cos(angle), 10.0f, 10.0f * sin(angle), 1.0f);
+ 	// prog->setUniform("Light.Position", view * lightPos);
+	// prog->setUniform("Light.L", 1.0f, 1.0f, 1.0f);
+ 	// prog->setUniform("Material.Kd", 0.9f, 0.5f, 0.3f);
+ 	// prog->setUniform("Material.Ka", 0.9f * 0.3f, 0.5f * 0.3f, 0.3f * 0.3f);
+ 	// prog->setUniform("Material.Ks", 0.0f, 0.0f, 0.0f);
+ 	// prog->setUniform("Material.Shininess", 180.0f);
+
+	/*bumpmap setting */
+//  prog->setUniform("Scale",vec2(10.0f,10.0f));
+//	prog->setUniform("Threshold", vec2(0.5f, 0.5f));
+//	prog->setUniform("SurfaceColor", vec4(0.7f, 0.6f, 0.18f,1.0f));
+//	prog->setUniform("BumpDensity", 16.0f);
+//	prog->setUniform("BumpSize",0.15f);
+//	prog->setUniform("SepcularFactor", 0.5f);
+//	angle = 0.3f;
+//  vec4 lightPos = vec4(10.0f * cos(angle), 10.0f, 10.0f * sin(angle), 1.0f);
+//  prog->setUniform("LightPosition", view * lightPos); 
+
+	//m_pCube->render();
 	//m_pMesh->render();
+	m_pDisc->render();
 }
 
 void cursor_callback( GLFWwindow* window, double xpos, double ypos )

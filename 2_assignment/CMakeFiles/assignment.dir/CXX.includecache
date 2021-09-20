@@ -1585,6 +1585,8 @@ vbocube.h
 /home/lus0a/CS380/cs380-2021/2_assignment/src/vbocube.h
 vbomesh.h
 /home/lus0a/CS380/cs380-2021/2_assignment/src/vbomesh.h
+vbodisc.h
+/home/lus0a/CS380/cs380-2021/2_assignment/src/vbodisc.h
 glslprogram.h
 /home/lus0a/CS380/cs380-2021/2_assignment/src/glslprogram.h
 
@@ -1602,7 +1604,19 @@ map
 stdexcept
 -
 
+/home/lus0a/CS380/cs380-2021/2_assignment/src/vbocube.cpp
+vbocube.h
 /home/lus0a/CS380/cs380-2021/2_assignment/src/vbocube.h
+glad/glad.h
+/home/lus0a/CS380/cs380-2021/2_assignment/src/glad/glad.h
+GLFW/glfw3.h
+-
+cstdio
+-
+
+/home/lus0a/CS380/cs380-2021/2_assignment/src/vbocube.h
+
+/home/lus0a/CS380/cs380-2021/2_assignment/src/vbodisc.h
 
 /home/lus0a/CS380/cs380-2021/2_assignment/src/vbomesh.h
 vector

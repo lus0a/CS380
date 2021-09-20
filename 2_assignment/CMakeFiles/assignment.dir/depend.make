@@ -224,6 +224,7 @@ CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: ../common/glm/vector_relational.
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/CS380_prog.cpp
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/glslprogram.h
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/vbocube.h
+CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/vbodisc.h
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/vbomesh.h
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: /usr/local/cuda-11.4/include/builtin_types.h
