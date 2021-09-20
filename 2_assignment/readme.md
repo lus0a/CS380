@@ -51,5 +51,7 @@ Implement the following procedural shaders
 
 # References:
 [1] http://en.wikipedia.org/wiki/Gouraud_shading
+
 [2] http://en.wikipedia.org/wiki/Phong_shading
+
 [3] Learn OpenGL - Graphics Programming, https://learnopengl.com/book/book_pdf.pdf
