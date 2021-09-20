@@ -224,8 +224,10 @@ CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: ../common/glm/vector_relational.
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/CS380_prog.cpp
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/glslprogram.h
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/vbocube.h
+CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/vbocylinder.h
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/vbodisc.h
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/vbomesh.h
+CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: src/vbosphere.h
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: /usr/local/cuda-11.4/include/builtin_types.h
 CMakeFiles/assignment.dir/src/CS380_prog.cpp.o: /usr/local/cuda-11.4/include/channel_descriptor.h
@@ -371,6 +373,18 @@ CMakeFiles/assignment.dir/src/vbocube.cpp.o: src/vbocube.cpp
 CMakeFiles/assignment.dir/src/vbocube.cpp.o: src/vbocube.h
 CMakeFiles/assignment.dir/src/vbocube.cpp.o: /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
 
+CMakeFiles/assignment.dir/src/vbocylinder.cpp.o: ../common/glad/KHR/khrplatform.h
+CMakeFiles/assignment.dir/src/vbocylinder.cpp.o: ../common/glad/glad.h
+CMakeFiles/assignment.dir/src/vbocylinder.cpp.o: src/vbocylinder.cpp
+CMakeFiles/assignment.dir/src/vbocylinder.cpp.o: src/vbocylinder.h
+CMakeFiles/assignment.dir/src/vbocylinder.cpp.o: /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
+
+CMakeFiles/assignment.dir/src/vbodisc.cpp.o: ../common/glad/KHR/khrplatform.h
+CMakeFiles/assignment.dir/src/vbodisc.cpp.o: ../common/glad/glad.h
+CMakeFiles/assignment.dir/src/vbodisc.cpp.o: src/vbodisc.cpp
+CMakeFiles/assignment.dir/src/vbodisc.cpp.o: src/vbodisc.h
+CMakeFiles/assignment.dir/src/vbodisc.cpp.o: /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
+
 CMakeFiles/assignment.dir/src/vbomesh.cpp.o: ../common/glad/KHR/khrplatform.h
 CMakeFiles/assignment.dir/src/vbomesh.cpp.o: ../common/glad/glad.h
 CMakeFiles/assignment.dir/src/vbomesh.cpp.o: ../common/glm/common.hpp
@@ -452,4 +466,10 @@ CMakeFiles/assignment.dir/src/vbomesh.cpp.o: ../common/glm/vector_relational.hpp
 CMakeFiles/assignment.dir/src/vbomesh.cpp.o: src/vbomesh.cpp
 CMakeFiles/assignment.dir/src/vbomesh.cpp.o: src/vbomesh.h
 CMakeFiles/assignment.dir/src/vbomesh.cpp.o: /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
+
+CMakeFiles/assignment.dir/src/vbosphere.cpp.o: ../common/glad/KHR/khrplatform.h
+CMakeFiles/assignment.dir/src/vbosphere.cpp.o: ../common/glad/glad.h
+CMakeFiles/assignment.dir/src/vbosphere.cpp.o: src/vbosphere.cpp
+CMakeFiles/assignment.dir/src/vbosphere.cpp.o: src/vbosphere.h
+CMakeFiles/assignment.dir/src/vbosphere.cpp.o: /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
 

@@ -122,13 +122,55 @@ CMakeFiles/assignment.dir/src/vbomesh.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/assignment.dir/src/vbomesh.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lus0a/CS380/cs380-2021/2_assignment/src/vbomesh.cpp -o CMakeFiles/assignment.dir/src/vbomesh.cpp.s
 
+CMakeFiles/assignment.dir/src/vbodisc.cpp.o: CMakeFiles/assignment.dir/flags.make
+CMakeFiles/assignment.dir/src/vbodisc.cpp.o: src/vbodisc.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/assignment.dir/src/vbodisc.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/assignment.dir/src/vbodisc.cpp.o -c /home/lus0a/CS380/cs380-2021/2_assignment/src/vbodisc.cpp
+
+CMakeFiles/assignment.dir/src/vbodisc.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/assignment.dir/src/vbodisc.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/lus0a/CS380/cs380-2021/2_assignment/src/vbodisc.cpp > CMakeFiles/assignment.dir/src/vbodisc.cpp.i
+
+CMakeFiles/assignment.dir/src/vbodisc.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/assignment.dir/src/vbodisc.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lus0a/CS380/cs380-2021/2_assignment/src/vbodisc.cpp -o CMakeFiles/assignment.dir/src/vbodisc.cpp.s
+
+CMakeFiles/assignment.dir/src/vbocylinder.cpp.o: CMakeFiles/assignment.dir/flags.make
+CMakeFiles/assignment.dir/src/vbocylinder.cpp.o: src/vbocylinder.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/assignment.dir/src/vbocylinder.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/assignment.dir/src/vbocylinder.cpp.o -c /home/lus0a/CS380/cs380-2021/2_assignment/src/vbocylinder.cpp
+
+CMakeFiles/assignment.dir/src/vbocylinder.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/assignment.dir/src/vbocylinder.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/lus0a/CS380/cs380-2021/2_assignment/src/vbocylinder.cpp > CMakeFiles/assignment.dir/src/vbocylinder.cpp.i
+
+CMakeFiles/assignment.dir/src/vbocylinder.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/assignment.dir/src/vbocylinder.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lus0a/CS380/cs380-2021/2_assignment/src/vbocylinder.cpp -o CMakeFiles/assignment.dir/src/vbocylinder.cpp.s
+
+CMakeFiles/assignment.dir/src/vbosphere.cpp.o: CMakeFiles/assignment.dir/flags.make
+CMakeFiles/assignment.dir/src/vbosphere.cpp.o: src/vbosphere.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/assignment.dir/src/vbosphere.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/assignment.dir/src/vbosphere.cpp.o -c /home/lus0a/CS380/cs380-2021/2_assignment/src/vbosphere.cpp
+
+CMakeFiles/assignment.dir/src/vbosphere.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/assignment.dir/src/vbosphere.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/lus0a/CS380/cs380-2021/2_assignment/src/vbosphere.cpp > CMakeFiles/assignment.dir/src/vbosphere.cpp.i
+
+CMakeFiles/assignment.dir/src/vbosphere.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/assignment.dir/src/vbosphere.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lus0a/CS380/cs380-2021/2_assignment/src/vbosphere.cpp -o CMakeFiles/assignment.dir/src/vbosphere.cpp.s
+
 # Object files for target assignment
 assignment_OBJECTS = \
 "CMakeFiles/assignment.dir/home/lus0a/CS380/cs380-2021/common/glad/glad.c.o" \
 "CMakeFiles/assignment.dir/src/CS380_prog.cpp.o" \
 "CMakeFiles/assignment.dir/src/glslprogram.cpp.o" \
 "CMakeFiles/assignment.dir/src/vbocube.cpp.o" \
-"CMakeFiles/assignment.dir/src/vbomesh.cpp.o"
+"CMakeFiles/assignment.dir/src/vbomesh.cpp.o" \
+"CMakeFiles/assignment.dir/src/vbodisc.cpp.o" \
+"CMakeFiles/assignment.dir/src/vbocylinder.cpp.o" \
+"CMakeFiles/assignment.dir/src/vbosphere.cpp.o"
 
 # External object files for target assignment
 assignment_EXTERNAL_OBJECTS =
@@ -138,6 +180,9 @@ assignment: CMakeFiles/assignment.dir/src/CS380_prog.cpp.o
 assignment: CMakeFiles/assignment.dir/src/glslprogram.cpp.o
 assignment: CMakeFiles/assignment.dir/src/vbocube.cpp.o
 assignment: CMakeFiles/assignment.dir/src/vbomesh.cpp.o
+assignment: CMakeFiles/assignment.dir/src/vbodisc.cpp.o
+assignment: CMakeFiles/assignment.dir/src/vbocylinder.cpp.o
+assignment: CMakeFiles/assignment.dir/src/vbosphere.cpp.o
 assignment: CMakeFiles/assignment.dir/build.make
 assignment: /usr/local/cuda-11.4/lib64/libcudart_static.a
 assignment: /usr/lib/x86_64-linux-gnu/librt.so
@@ -146,7 +191,7 @@ assignment: /usr/lib/x86_64-linux-gnu/librt.so
 assignment: /usr/lib/x86_64-linux-gnu/libm.so
 assignment: /usr/lib/x86_64-linux-gnu/libX11.so
 assignment: CMakeFiles/assignment.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable assignment"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable assignment"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/assignment.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

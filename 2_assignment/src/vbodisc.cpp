@@ -15,8 +15,9 @@
 //#include "glutils.h"
 
 #include <cstdio>
+#include <cmath>
 
-VBODisc::VBODisc(float Radius, float Thickness, int sampleb):
+VBODisc::VBODisc(float Radius, float Thickness, int sampleb)
 {
     int nVert = 4*sampleb;
     double beta = TWOPI/sampleb;
@@ -25,7 +26,7 @@ VBODisc::VBODisc(float Radius, float Thickness, int sampleb):
     float *n = new float[3*3*nVert];
     float *tex = new float[3*2*nVert];
     faces = sampleb;
-    unsigned int *el = new unsigned int[3*6*face];
+    unsigned int *el = new unsigned int[3*6*faces];
     for (int i = 0; i<sampleb; i++)
     {
         v[12*i] = 0.0f;

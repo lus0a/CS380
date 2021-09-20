@@ -225,8 +225,10 @@ CMakeFiles/assignment.dir/src/CS380_prog.cpp.o
  /home/lus0a/CS380/cs380-2021/2_assignment/src/CS380_prog.cpp
  /home/lus0a/CS380/cs380-2021/2_assignment/src/glslprogram.h
  /home/lus0a/CS380/cs380-2021/2_assignment/src/vbocube.h
+ /home/lus0a/CS380/cs380-2021/2_assignment/src/vbocylinder.h
  /home/lus0a/CS380/cs380-2021/2_assignment/src/vbodisc.h
  /home/lus0a/CS380/cs380-2021/2_assignment/src/vbomesh.h
+ /home/lus0a/CS380/cs380-2021/2_assignment/src/vbosphere.h
  /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
  /usr/local/cuda-11.4/include/builtin_types.h
  /usr/local/cuda-11.4/include/channel_descriptor.h
@@ -371,6 +373,18 @@ CMakeFiles/assignment.dir/src/vbocube.cpp.o
  /home/lus0a/CS380/cs380-2021/2_assignment/src/vbocube.cpp
  /home/lus0a/CS380/cs380-2021/2_assignment/src/vbocube.h
  /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
+CMakeFiles/assignment.dir/src/vbocylinder.cpp.o
+ ../common/glad/KHR/khrplatform.h
+ ../common/glad/glad.h
+ /home/lus0a/CS380/cs380-2021/2_assignment/src/vbocylinder.cpp
+ /home/lus0a/CS380/cs380-2021/2_assignment/src/vbocylinder.h
+ /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
+CMakeFiles/assignment.dir/src/vbodisc.cpp.o
+ ../common/glad/KHR/khrplatform.h
+ ../common/glad/glad.h
+ /home/lus0a/CS380/cs380-2021/2_assignment/src/vbodisc.cpp
+ /home/lus0a/CS380/cs380-2021/2_assignment/src/vbodisc.h
+ /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
 CMakeFiles/assignment.dir/src/vbomesh.cpp.o
  ../common/glad/KHR/khrplatform.h
  ../common/glad/glad.h
@@ -452,4 +466,10 @@ CMakeFiles/assignment.dir/src/vbomesh.cpp.o
  ../common/glm/vector_relational.hpp
  /home/lus0a/CS380/cs380-2021/2_assignment/src/vbomesh.cpp
  /home/lus0a/CS380/cs380-2021/2_assignment/src/vbomesh.h
+ /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h
+CMakeFiles/assignment.dir/src/vbosphere.cpp.o
+ ../common/glad/KHR/khrplatform.h
+ ../common/glad/glad.h
+ /home/lus0a/CS380/cs380-2021/2_assignment/src/vbosphere.cpp
+ /home/lus0a/CS380/cs380-2021/2_assignment/src/vbosphere.h
  /home/lus0a/CS380/cs380-2021/common/glfw-3.3/include/GLFW/glfw3.h

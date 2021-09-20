@@ -15,17 +15,18 @@
 //#include "glutils.h"
 
 #include <cstdio>
+#include <cmath>
 
-VBODisc::VBOCylinder(float outerRadius, float innerRadius, float H, int sampleb):
+VBOCylinder::VBOCylinder(float outerRadius, float innerRadius, float H, int sampleb)
 {
     int nVert = 4*sampleb;
     double beta = TWOPI/sampleb;
-    float T2 = Thickness/2;
+    float T2 = H/2;
     float *v = new float[4*3*nVert];
     float *n = new float[4*3*nVert];
     float *tex = new float[4*2*nVert];
     faces = sampleb;
-    unsigned int *el = new unsigned int[4*6*face];
+    unsigned int *el = new unsigned int[4*6*faces];
     
     //top
     for (int i = 0; i<sampleb; i++)

@@ -7,7 +7,10 @@ add_executable(assignment
 	./src/CS380_prog.cpp
 	./src/glslprogram.cpp 
 	./src/vbocube.cpp 
-	./src/vbomesh.cpp 
+	./src/vbomesh.cpp
+	./src/vbodisc.cpp
+	./src/vbocylinder.cpp
+	./src/vbosphere.cpp
 	)
 	
 	

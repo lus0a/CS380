@@ -20,7 +20,10 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/home/lus0a/CS380/cs380-2021/2_assignment/src/CS380_prog.cpp" "/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles/assignment.dir/src/CS380_prog.cpp.o"
   "/home/lus0a/CS380/cs380-2021/2_assignment/src/glslprogram.cpp" "/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles/assignment.dir/src/glslprogram.cpp.o"
   "/home/lus0a/CS380/cs380-2021/2_assignment/src/vbocube.cpp" "/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles/assignment.dir/src/vbocube.cpp.o"
+  "/home/lus0a/CS380/cs380-2021/2_assignment/src/vbocylinder.cpp" "/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles/assignment.dir/src/vbocylinder.cpp.o"
+  "/home/lus0a/CS380/cs380-2021/2_assignment/src/vbodisc.cpp" "/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles/assignment.dir/src/vbodisc.cpp.o"
   "/home/lus0a/CS380/cs380-2021/2_assignment/src/vbomesh.cpp" "/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles/assignment.dir/src/vbomesh.cpp.o"
+  "/home/lus0a/CS380/cs380-2021/2_assignment/src/vbosphere.cpp" "/home/lus0a/CS380/cs380-2021/2_assignment/CMakeFiles/assignment.dir/src/vbosphere.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

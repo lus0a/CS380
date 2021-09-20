@@ -9,7 +9,7 @@ private:
     int faces;
 
 public:
-    VBODisc(float Radius, float Thickness, int sampleb);
+    VBODisc(float , float , int );
 
     void render();
 };

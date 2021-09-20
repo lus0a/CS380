@@ -1,4 +1,5 @@
 #version 460
+
 uniform vec4 SurfaceColor;
 uniform float BumpDensity;
 uniform float BumpSize;

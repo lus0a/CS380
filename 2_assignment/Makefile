@@ -693,6 +693,60 @@ src/vbocube.cpp.s:
 	$(MAKE) -f CMakeFiles/assignment.dir/build.make CMakeFiles/assignment.dir/src/vbocube.cpp.s
 .PHONY : src/vbocube.cpp.s
 
+src/vbocylinder.o: src/vbocylinder.cpp.o
+
+.PHONY : src/vbocylinder.o
+
+# target to build an object file
+src/vbocylinder.cpp.o:
+	$(MAKE) -f CMakeFiles/assignment.dir/build.make CMakeFiles/assignment.dir/src/vbocylinder.cpp.o
+.PHONY : src/vbocylinder.cpp.o
+
+src/vbocylinder.i: src/vbocylinder.cpp.i
+
+.PHONY : src/vbocylinder.i
+
+# target to preprocess a source file
+src/vbocylinder.cpp.i:
+	$(MAKE) -f CMakeFiles/assignment.dir/build.make CMakeFiles/assignment.dir/src/vbocylinder.cpp.i
+.PHONY : src/vbocylinder.cpp.i
+
+src/vbocylinder.s: src/vbocylinder.cpp.s
+
+.PHONY : src/vbocylinder.s
+
+# target to generate assembly for a file
+src/vbocylinder.cpp.s:
+	$(MAKE) -f CMakeFiles/assignment.dir/build.make CMakeFiles/assignment.dir/src/vbocylinder.cpp.s
+.PHONY : src/vbocylinder.cpp.s
+
+src/vbodisc.o: src/vbodisc.cpp.o
+
+.PHONY : src/vbodisc.o
+
+# target to build an object file
+src/vbodisc.cpp.o:
+	$(MAKE) -f CMakeFiles/assignment.dir/build.make CMakeFiles/assignment.dir/src/vbodisc.cpp.o
+.PHONY : src/vbodisc.cpp.o
+
+src/vbodisc.i: src/vbodisc.cpp.i
+
+.PHONY : src/vbodisc.i
+
+# target to preprocess a source file
+src/vbodisc.cpp.i:
+	$(MAKE) -f CMakeFiles/assignment.dir/build.make CMakeFiles/assignment.dir/src/vbodisc.cpp.i
+.PHONY : src/vbodisc.cpp.i
+
+src/vbodisc.s: src/vbodisc.cpp.s
+
+.PHONY : src/vbodisc.s
+
+# target to generate assembly for a file
+src/vbodisc.cpp.s:
+	$(MAKE) -f CMakeFiles/assignment.dir/build.make CMakeFiles/assignment.dir/src/vbodisc.cpp.s
+.PHONY : src/vbodisc.cpp.s
+
 src/vbomesh.o: src/vbomesh.cpp.o
 
 .PHONY : src/vbomesh.o
@@ -719,6 +773,33 @@ src/vbomesh.s: src/vbomesh.cpp.s
 src/vbomesh.cpp.s:
 	$(MAKE) -f CMakeFiles/assignment.dir/build.make CMakeFiles/assignment.dir/src/vbomesh.cpp.s
 .PHONY : src/vbomesh.cpp.s
+
+src/vbosphere.o: src/vbosphere.cpp.o
+
+.PHONY : src/vbosphere.o
+
+# target to build an object file
+src/vbosphere.cpp.o:
+	$(MAKE) -f CMakeFiles/assignment.dir/build.make CMakeFiles/assignment.dir/src/vbosphere.cpp.o
+.PHONY : src/vbosphere.cpp.o
+
+src/vbosphere.i: src/vbosphere.cpp.i
+
+.PHONY : src/vbosphere.i
+
+# target to preprocess a source file
+src/vbosphere.cpp.i:
+	$(MAKE) -f CMakeFiles/assignment.dir/build.make CMakeFiles/assignment.dir/src/vbosphere.cpp.i
+.PHONY : src/vbosphere.cpp.i
+
+src/vbosphere.s: src/vbosphere.cpp.s
+
+.PHONY : src/vbosphere.s
+
+# target to generate assembly for a file
+src/vbosphere.cpp.s:
+	$(MAKE) -f CMakeFiles/assignment.dir/build.make CMakeFiles/assignment.dir/src/vbosphere.cpp.s
+.PHONY : src/vbosphere.cpp.s
 
 # Help Target
 help:
@@ -777,9 +858,18 @@ help:
 	@echo "... src/vbocube.o"
 	@echo "... src/vbocube.i"
 	@echo "... src/vbocube.s"
+	@echo "... src/vbocylinder.o"
+	@echo "... src/vbocylinder.i"
+	@echo "... src/vbocylinder.s"
+	@echo "... src/vbodisc.o"
+	@echo "... src/vbodisc.i"
+	@echo "... src/vbodisc.s"
 	@echo "... src/vbomesh.o"
 	@echo "... src/vbomesh.i"
 	@echo "... src/vbomesh.s"
+	@echo "... src/vbosphere.o"
+	@echo "... src/vbosphere.i"
+	@echo "... src/vbosphere.s"
 .PHONY : help
 
 

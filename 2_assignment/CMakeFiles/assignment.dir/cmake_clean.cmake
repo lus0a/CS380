@@ -3,7 +3,10 @@ file(REMOVE_RECURSE
   "CMakeFiles/assignment.dir/src/CS380_prog.cpp.o"
   "CMakeFiles/assignment.dir/src/glslprogram.cpp.o"
   "CMakeFiles/assignment.dir/src/vbocube.cpp.o"
+  "CMakeFiles/assignment.dir/src/vbocylinder.cpp.o"
+  "CMakeFiles/assignment.dir/src/vbodisc.cpp.o"
   "CMakeFiles/assignment.dir/src/vbomesh.cpp.o"
+  "CMakeFiles/assignment.dir/src/vbosphere.cpp.o"
   "assignment"
   "assignment.pdb"
 )
