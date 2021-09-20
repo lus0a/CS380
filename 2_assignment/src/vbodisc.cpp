@@ -18,26 +18,26 @@
 
 VBODisc::VBODisc(float Radius, float Thickness, int sampleb):
 {
-    int nVert = 4*(sampleb+1);
+    int nVert = 4*sampleb;
     double beta = TWOPI/sampleb;
     float T2 = Thickness/2;
     float *v = new float[3*nVert];
     float *n = new float[3*nVert];
     float *tex = new float[2*nVert];
     faces = sampleb;
-    unsigned int *el = new unsigned int[face];
-    for (int i = 0; i<=sampleb; i++)
+    unsigned int *el = new unsigned int[6*face];
+    for (int i = 0; i<sampleb; i++)
     {
-        v[12*i] = Radius*cos(i*beta);
-        v[12*i+1] = Radius*sin(i*beta);
+        v[12*i] = 0.0f;
+        v[12*i+1] = 0.0f;
         v[12*i+2] = T2;
 
-        v[12*i+3] = Radius*cos((i+1)*beta);
-        v[12*i+4] = Radius*sin((i+1)*beta);
+        v[12*i+3] = Radius*cos(i*beta);
+        v[12*i+4] = Radius*sin(i*beta);
         v[12*i+5] = T2;
 
-        v[12*i+6] = 0.0f;
-        v[12*i+7] = 0.0f;
+        v[12*i+6] = Radius*cos((i+1)*beta);
+        v[12*i+7] = Radius*sin((i+1)*beta);
         v[12*i+8] = T2;
 
         v[12*i+9] = 0.0f;
@@ -69,9 +69,12 @@ VBODisc::VBODisc(float Radius, float Thickness, int sampleb):
         tex[8*i+6] = 1.0f;
         tex[8*i+7] = 0.0f;
 
-        el[3*i] = i;
-        el[3*i+1] = i+1;
-        el[3*i+2] = i+2;
+        el[6*i] = 4*i;
+        el[6*i+1] = 4*i+1;
+        el[6*i+2] = 4*i+2;
+        el[6*i+3] = 4*i;
+        el[6*i+4] = 4*i+2;
+        el[6*i+5] = 4*i+3;
     }
 
     // GLuint el[] = {
@@ -105,12 +108,12 @@ VBODisc::VBODisc(float Radius, float Thickness, int sampleb):
     glEnableVertexAttribArray(2);  // texture coords
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, handle[3]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3*(sampleb+1) * sizeof(GLuint), el, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*faces * sizeof(GLuint), el, GL_STATIC_DRAW);
 
     glBindVertexArray(0);
 }
 
 void VBODisc::render() {
     glBindVertexArray(vaoHandle);
-    glDrawElements(GL_TRIANGLES, 3*faces, GL_UNSIGNED_INT, ((GLubyte *)NULL + (0)));
+    glDrawElements(GL_TRIANGLES, 6*faces, GL_UNSIGNED_INT, ((GLubyte *)NULL + (0)));
 }
