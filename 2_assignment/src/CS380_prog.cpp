@@ -464,8 +464,8 @@ void renderFrame()
 	
 
 	//m_pCube->render();
-	m_pMesh->render();
-	//m_pDisc->render();
+	//m_pMesh->render();
+	m_pDisc->render();
 	//m_pCylinder->render();
 	//m_pSphere->render();
 
@@ -582,10 +582,10 @@ void renderFrame()
 	
 
 	//m_pCube->render();
-	m_pMesh->render();
+	//m_pMesh->render();
 	//m_pDisc->render();
 	//m_pCylinder->render();
-	//m_pSphere->render();
+	m_pSphere->render();
 
 }
 
