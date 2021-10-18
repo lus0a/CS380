@@ -14,7 +14,7 @@ uniform vec3 objectColor;
 out vec4 FragColor;
 
 int Width = 1024;
-int Height = 1024; 
+int Height = 1024;
 float dx = 1.0 / float(Width);
 float dy = 1.0 / float(Height);
 
@@ -29,9 +29,8 @@ vec3 sum = vec3(0.0f);
 for (int i=(-1*myInt); i <= myInt; i++)
     for (int j=(-1*myInt); j <= myInt; j++)
     {
-        sum += texture( gAlbedoSpec, TexCoord + vec2(dx*float(j),dy*float(i)) ).rgb; 
+        sum += texture( gAlbedoSpec, TexCoord + vec2(dx*float(j),dy*float(i)) ).rgb;
     }
-
-FragColor = vec4(vec3(sum/float(4 * myInt * myInt)),1.0f) ;
+    FragColor = vec4(vec3(sum/float(4 * myInt * myInt)),1.0f) ;
 
 }

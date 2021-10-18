@@ -19,7 +19,6 @@
 #include "imageprocessing.cuh"
 
 
-
 // query GPU functionality we need for CUDA, return false when not available
 bool queryGPUCapabilitiesCUDA()
 {
@@ -62,6 +61,24 @@ int main(int argc, char** argv)
 	const unsigned char green[] = { 0, 255, 0 };
 	const unsigned char blue[] = { 0, 0, 255 };
 
+	int imgheight = image.height();
+	int imgwidth = image.width();
+	std::cout << imgheight << std::endl << imgwidth << std::endl;
+	
+	int imgproduct = imgheight*imgwidth;
+	cimg_library::CImg<unsigned char> originimage = image;
+
+	float brightnessfactor = 1.0f;
+	float contrastfactor = 1.0f;
+	float saturationfactor = 1.0f;
+	unsigned char  *d_input, *d_output;
+	cudaMalloc((void **)&d_input, imgproduct*3*sizeof(unsigned char));
+	cudaMalloc((void **)&d_output, imgproduct*3*sizeof(unsigned char));
+	cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
+
+	dim3 threads(8,8);
+	dim3 blocks(imgwidth/threads.x, imgheight/threads.y);
+
 	// create displays 
 	cimg_library::CImgDisplay inputImageDisplay(image, "click to select row of pixels");
 	inputImageDisplay.move(40, 40);
@@ -76,6 +93,59 @@ int main(int argc, char** argv)
 			visualization.draw_graph(image.get_crop(0, y, 0, 1, image.width() - 1, y, 0, 1), green, 1, 1, 0, 255, 0);
 			visualization.draw_graph(image.get_crop(0, y, 0, 2, image.width() - 1, y, 0, 2), blue, 1, 1, 0, 255, 0).display(visualizationDisplay);
 		}
+		else if(inputImageDisplay.is_keyB()){ // brightness on
+			brightnessfactor -= 0.1;			
+			brightnessfactor = brightnessfactor < 0.0 ? 0.0 : brightnessfactor;
+			// float brightnessfactor =0.5;
+			printf("brightness %f \n", brightnessfactor);
+			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
+			callbrightness(blocks, threads, d_output, brightnessfactor, d_input, imgheight, imgwidth);
+			cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if(inputImageDisplay.is_keyG()){ // brightness down
+			// brightnessfactor += 0.1;
+			// brightnessfactor = brightnessfactor > 1.0 ? 1.0 : brightnessfactor;
+			// printf("brightness %f \n", brightnessfactor);
+			// cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
+			// callbrightness(blocks, threads, d_output, brightnessfactor, d_input, imgheight, imgwidth);
+			// cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if(inputImageDisplay.is_keyH()){ // contrast up
+			contrastfactor += 0.1;			
+			//contrastfactor = contrastfactor > 1.0 ? 1.0 : contrastfactor;
+			printf("contrastfactor %f \n", contrastfactor);
+			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
+			callcontrast(blocks, threads, d_output, contrastfactor, d_input, imgheight, imgwidth);
+			cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if(inputImageDisplay.is_keyN()){ // contrast down
+			contrastfactor -= 0.1;			
+			//contrastfactor = contrastfactor < 0.0 ? 0.0 : contrastfactor;
+			printf("contrastfactor %f \n", contrastfactor);
+			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
+			callcontrast(blocks, threads, d_output, contrastfactor, d_input, imgheight, imgwidth);
+			cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if(inputImageDisplay.is_keyJ()){ // saturation up
+			saturationfactor += 0.1;			
+			saturationfactor = saturationfactor > 1.0 ? 1.0 : saturationfactor;
+			printf("saturationfactor %f \n", saturationfactor);
+			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
+			callsaturation(blocks, threads, d_output, saturationfactor, d_input, imgheight, imgwidth);
+			cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if(inputImageDisplay.is_keyM()){ // saturation down
+			saturationfactor -= 0.1;			
+			saturationfactor = saturationfactor < 0.0 ? 0.0 : saturationfactor;
+			printf("saturationfactor %f \n", saturationfactor);
+			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
+			callsaturation(blocks, threads, d_output, saturationfactor, d_input, imgheight, imgwidth);
+			cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if(inputImageDisplay.is_keyESC()){ // quit
+			break;
+		}
+		inputImageDisplay.display(image);
 	}
 
 	// save test output image

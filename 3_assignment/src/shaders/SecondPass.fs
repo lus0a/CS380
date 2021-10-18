@@ -16,13 +16,13 @@ out vec4 FragColor;
 void main()
 {
  
-  // retrieve data from gbuffer
+    // retrieve data from gbuffer
     vec3 FragPos = texture(gPosition, TexCoord).rgb;
     vec3 Normal = texture(gNormal, TexCoord).rgb;
     vec3 Diffuse = texture(gAlbedoSpec, TexCoord).rgb;
     float Specular = texture(gAlbedoSpec, TexCoord).a;
 
-   // float gDepth = texture(gDepth, TexCoord).a;
+    // float gDepth = texture(gDepth, TexCoord).a;
     
     // then calculate lighting as usual
     vec3 lighting  = Diffuse * 0.1; // hard-coded ambient component
@@ -39,7 +39,7 @@ void main()
     lighting = (diffuse + specular) ;        
 
     FragColor = vec4((lighting), 1.0);
-   //FragColor = vec4(vec3(gDepth), 1.0);
+    //FragColor = vec4(vec3(gDepth), 1.0);
    
    
 } 

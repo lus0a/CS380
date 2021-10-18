@@ -28,9 +28,9 @@ float LinearizeDepth(float depth)
 
 void main()
 {
-   
 
-  // store the fragment position vector in the first gbuffer texture
+
+    // store the fragment position vector in the first gbuffer texture
     gPosition = FragPos;
     // // also store the per-fragment normals into the gbuffer
     gNormal = normalize(Normal);
@@ -39,7 +39,7 @@ void main()
     //linear depth 
     float depth =LinearizeDepth(gl_FragCoord.z) / far; // divide by far for demonstration
     gDepth = vec3(depth);
-   //FragColor = vec4(vec3(depth), 1.0);
+    //FragColor = vec4(vec3(depth), 1.0);
 
 
   //FragColor = vec4(Color, 1.0);

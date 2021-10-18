@@ -49,7 +49,7 @@ float z = 0.5f;
 unsigned int gBuffer;
 unsigned int gPosition, gNormal, gAlbedoSpec, gDepth;
 
-int shaderType = 0;
+int shaderType = 1;
 
 int kernelSize =3;
 int myInt = std::floor(kernelSize/2);
@@ -693,4 +693,3 @@ int main(int argc, char** argv)
 	glfwTerminate();
 	return EXIT_SUCCESS;
 }
-

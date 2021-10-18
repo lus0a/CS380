@@ -37,17 +37,18 @@ void main()
  float s22 = luma(texture( gDepth, TexCoord + vec2(dx, -dy) ).rgb);
 
 
-  float sx = s00 + 2 * s10 + s20 - (s02 + 2 * s12 + s22);
-  float sy = s00 + 2 * s01 + s02 - (s20 + 2 * s21 + s22);
+  // float sx = s00 + 2 * s10 + s20 - (s02 + 2 * s12 + s22);
+  // float sy = s00 + 2 * s01 + s02 - (s20 + 2 * s21 + s22);
 
-  float g = sx * sx + sy * sy;
+  // float g = sx * sx + sy * sy;
+  float g = s00 + s10 + s20 + s00 + s01 + s02 - (s02 +  s12 + s22 + s20 + s21 + s22);
 
-    if( g > 1.5f )
+    if( g > 0.005f )
         FragColor = vec4(1.0,1.0,1.0,1.0);
     else
         FragColor = vec4(0.0,0.0,0.0,1.0);
 
-//vec3 ngDepth = texture(gDepth, TexCoord).rgb;
-//FragColor = vec4(ngDepth,1.0);
+//  vec3 ngDepth = texture(gDepth, TexCoord).rgb;
+//  FragColor = vec4(ngDepth,1.0);
 
 } 
