@@ -85,8 +85,8 @@ void contrast(unsigned char* out_image, float contrastfactor, unsigned char* in_
 	if(out_image[(height * 2 + pos_x) * width + pos_y]>255)
 		out_image[(height * 2 + pos_x) * width + pos_y] = 255;
 }
-void callcontrast(dim3 grid, dim3 block, unsigned char* out_image, float contrastfactor, unsigned char* d_input, int height, int width){
-	contrast <<<grid, block>>> (out_image, contrastfactor, d_input, height, width);
+void callcontrast(dim3 blocks, dim3 threads, unsigned char* out_image, float contrastfactor, unsigned char* d_input, int height, int width){
+	contrast <<<blocks, threads>>> (out_image, contrastfactor, d_input, height, width);
 }
 
 __global__
@@ -112,6 +112,68 @@ void saturation(unsigned char* out_image, float saturationfactor, unsigned char*
 	if(out_image[(height * 2 + pos_x) * width + pos_y]>255)
 		out_image[(height * 2 + pos_x) * width + pos_y] = 255;
 }
-void callsaturation(dim3 grid, dim3 block, unsigned char* out_image, float saturationfactor, unsigned char* d_input, int height, int width){
-	saturation <<<grid, block>>> (out_image, saturationfactor, d_input, height, width);
+void callsaturation(dim3 blocks, dim3 threads, unsigned char* out_image, float saturationfactor, unsigned char* d_input, int height, int width){
+	saturation <<<blocks, threads>>> (out_image, saturationfactor, d_input, height, width);
+}
+
+__global__
+void smooth(unsigned char* out_image, unsigned char* in_image, float *conv_kernel, int halfl, int height, int width)
+{
+	int pos_x = blockIdx.x * blockDim.x + threadIdx.x;//x coordinate of pixel
+	int pos_y = blockIdx.y * blockDim.y + threadIdx.y;//y coordinate of pixel
+
+	if (pos_x < width && pos_y < height)
+	{
+		int l = 2*halfl + 1;
+		float size = l*l;
+		float r = float(0.0f);
+		float g = float(0.0f);
+		float b = float(0.0f);
+		float originr = ((float)in_image[pos_x * width + pos_y]) / 255.0f;
+		float origing = ((float)in_image[(height + pos_x) * width + pos_y]) / 255.0f;
+		float originb = ((float)in_image[(height * 2 + pos_x) * width + pos_y]) / 255.0f;
+		for(int i=(-halfl); i<=halfl; i++){
+			for(int j=(-halfl); j<=halfl; j++){
+				int convidx = (i+halfl)*l+j+halfl;
+				if(pos_x + i > 0 && pos_y + i > 0 && pos_x + j <= width && pos_y + i <= height)
+				{
+					r += conv_kernel[convidx]*((float)in_image[(pos_x+i) * width + (pos_y+j)])/255.0f; 
+					g += conv_kernel[convidx]*((float)in_image[(height + (pos_x+i)) * width + (pos_y+j)])/255.0f;
+					b += conv_kernel[convidx]*((float)in_image[(height * 2 + (pos_x+i)) * width + (pos_y+j)])/255.0f;
+				}
+			}
+		}
+		for (int i = (-1 * 15); i <= 15; i++)
+			for (int j = (-1 *15); j <= 15; j++)
+			{
+				if (pos_x + j > 0 && pos_y + i > 0 && pos_x + j <= width && pos_y + i <= height)
+				{
+					sumR += (float)in_image[(pos_y + i) * width + (pos_x + j)] / (31 * 31);
+					sumG += (float)in_image[(height + (pos_y + i)) * width + (pos_x + j)] / (31 * 31);
+					sumB += (float)in_image[(height * 2 + (pos_y + i)) * width + (pos_x + j)] / (31 * 31);
+				}	
+			}
+		//sumR = sumR / (15 * 15);
+		//sumG = sumG / (15 * 15);
+		//sumB = sumB / (15 * 15);
+		if (sumR > 255)
+			sumR = 255;
+		if (sumG > 255)
+			sumG = 255;
+		if (sumB > 255)
+			sumB = 255;
+		
+		out_image[pos_y * width + pos_x] = (unsigned char)(sumR );
+		out_image[(height + pos_y) * width + pos_x] = (unsigned char)(sumG ) ;
+		out_image[(height * 2 + pos_y) * width + pos_x] = (unsigned char)(sumB );
+		
+	}
+}
+void callsmooth(dim3 blocks, dim3 threads, unsigned char* out_image,  unsigned char* d_input, float *conv_kernel, int length,int height, int width)
+{
+	int halfl = length/2;
+	smooth <<<blocks, threads>>> (out_image, d_input, conv_kernel, halfl, height, width);
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) 
+	  printf("Error: %s\n", cudaGetErrorString(err));
 }

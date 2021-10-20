@@ -35,7 +35,25 @@ bool queryGPUCapabilitiesCUDA()
 	return devCount > 0;
 }
 
+void getconv(float **conv_kernel, int l){//mean filter 
+	float *tmp = (float*)malloc(l*l*sizeof(float));
+	for(int i=0; i<l*l; i++){
+		tmp[i] = 1.0;
+	}
+	*(conv_kernel) = tmp;
+}
 
+void getgaussian(float **gaussian_kernel, int l){// Gaussian filter 
+	float *tmp = (float*)malloc(l*l*sizeof(float));
+	int half_l = l / 2;
+	float sigma = 1.0f;
+	
+	for(int i=-half_l; i<half_l+1; i++)
+		for(int j=-half_l; j<half_l+1; j++){
+			tmp[(i+half_l)*l+j+half_l] = 1/(2*3.1415926*sigma*sigma)*exp(-1*((i*i)+(j*j))/(2*sigma*sigma));
+		}
+	*(gaussian_kernel) = tmp;
+}
 
 // entry point
 int main(int argc, char** argv)
@@ -71,6 +89,12 @@ int main(int argc, char** argv)
 	float brightnessfactor = 1.0f;
 	float contrastfactor = 1.0f;
 	float saturationfactor = 1.0f;
+	bool smooth = false;
+	int smoothsize = 3;
+	float * smoothconv, * dsmoothconv;
+	bool gauss = false;
+	bool edgedetection = false;
+	bool sharpen = false;
 	unsigned char  *d_input, *d_output;
 	cudaMalloc((void **)&d_input, imgproduct*3*sizeof(unsigned char));
 	cudaMalloc((void **)&d_output, imgproduct*3*sizeof(unsigned char));
@@ -86,6 +110,7 @@ int main(int argc, char** argv)
 	visualizationDisplay.move(600, 40);
 	while (!inputImageDisplay.is_closed() && !visualizationDisplay.is_closed()) {
 		inputImageDisplay.wait();
+
 		if (inputImageDisplay.button() && inputImageDisplay.mouse_y() >= 0) {
 			// on click redraw visualization
 			const int y = inputImageDisplay.mouse_y();
@@ -93,7 +118,7 @@ int main(int argc, char** argv)
 			visualization.draw_graph(image.get_crop(0, y, 0, 1, image.width() - 1, y, 0, 1), green, 1, 1, 0, 255, 0);
 			visualization.draw_graph(image.get_crop(0, y, 0, 2, image.width() - 1, y, 0, 2), blue, 1, 1, 0, 255, 0).display(visualizationDisplay);
 		}
-		else if(inputImageDisplay.is_keyB()){ // brightness on
+		else if(inputImageDisplay.is_keyB()){ // brightness up
 			brightnessfactor -= 0.1;			
 			brightnessfactor = brightnessfactor < 0.0 ? 0.0 : brightnessfactor;
 			// float brightnessfactor =0.5;
@@ -103,16 +128,16 @@ int main(int argc, char** argv)
 			cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
 		}
 		else if(inputImageDisplay.is_keyG()){ // brightness down
-			// brightnessfactor += 0.1;
-			// brightnessfactor = brightnessfactor > 1.0 ? 1.0 : brightnessfactor;
-			// printf("brightness %f \n", brightnessfactor);
-			// cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
-			// callbrightness(blocks, threads, d_output, brightnessfactor, d_input, imgheight, imgwidth);
-			// cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
+			brightnessfactor += 0.1;
+			brightnessfactor = brightnessfactor > 1.0 ? 1.0 : brightnessfactor;
+			printf("brightness %f \n", brightnessfactor);
+			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
+			callbrightness(blocks, threads, d_output, brightnessfactor, d_input, imgheight, imgwidth);
+			cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
 		}
 		else if(inputImageDisplay.is_keyH()){ // contrast up
 			contrastfactor += 0.1;			
-			//contrastfactor = contrastfactor > 1.0 ? 1.0 : contrastfactor;
+			contrastfactor = contrastfactor > 1.0 ? 1.0 : contrastfactor;
 			printf("contrastfactor %f \n", contrastfactor);
 			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
 			callcontrast(blocks, threads, d_output, contrastfactor, d_input, imgheight, imgwidth);
@@ -120,7 +145,7 @@ int main(int argc, char** argv)
 		}
 		else if(inputImageDisplay.is_keyN()){ // contrast down
 			contrastfactor -= 0.1;			
-			//contrastfactor = contrastfactor < 0.0 ? 0.0 : contrastfactor;
+			contrastfactor = contrastfactor < 0.0 ? 0.0 : contrastfactor;
 			printf("contrastfactor %f \n", contrastfactor);
 			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
 			callcontrast(blocks, threads, d_output, contrastfactor, d_input, imgheight, imgwidth);
@@ -140,6 +165,29 @@ int main(int argc, char** argv)
 			printf("saturationfactor %f \n", saturationfactor);
 			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
 			callsaturation(blocks, threads, d_output, saturationfactor, d_input, imgheight, imgwidth);
+			cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if(inputImageDisplay.is_key1()){
+			smoothsize += 2;
+			printf("set smmoth size to \n", smoothsize);
+		} 
+		else if(inputImageDisplay.is_keyT()){ // smooth on/off
+			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
+			if(smooth)
+			{
+				printf("trun off smooth\n");
+				smooth = false;
+			  	cudaMemcpy(d_output, d_input, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToDevice);
+			}
+			else
+			{
+				printf("trun on smooth\n");
+				smooth = true;
+				getconv(&smoothconv, smoothsize);
+				cudaMalloc((void **)&dsmoothconv, smoothsize*smoothsize*sizeof(float));
+				cudaMemcpy(dsmoothconv, smoothconv, smoothsize*smoothsize*sizeof(float), cudaMemcpyHostToDevice);
+				callsmooth(blocks, threads, d_output, d_input, dsmoothconv, smoothsize, imgheight, imgwidth);
+			}
 			cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
 		}
 		else if(inputImageDisplay.is_keyESC()){ // quit
