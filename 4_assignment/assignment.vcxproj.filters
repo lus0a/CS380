@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\CS380\cs380-2021\4_assignment\src\CS380_prog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\CS380\cs380-2021\4_assignment\src\vggreader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="src\imageprocessing.cu">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\CS380\cs380-2021\4_assignment\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="C:\CS380\cs380-2021\4_assignment\CMakeFiles\assignment.dir\src\$(Configuration)\assignment_generated_imageprocessing.cu.obj">
+      <Filter>Object Files</Filter>
+    </Object>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Object Files">
+      <UniqueIdentifier>{75668679-1471-361E-9D90-2AB3A87D8DC4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{B9392B9F-C775-37FF-95F8-946A71C8171C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,3 +1,3 @@
-/home/lus0a/CS380/cs380-2021/4_assignment/CMakeFiles/rebuild_cache.dir
-/home/lus0a/CS380/cs380-2021/4_assignment/CMakeFiles/edit_cache.dir
-/home/lus0a/CS380/cs380-2021/4_assignment/CMakeFiles/assignment.dir
+C:/CS380/cs380-2021/4_assignment/CMakeFiles/assignment.dir
+C:/CS380/cs380-2021/4_assignment/CMakeFiles/ALL_BUILD.dir
+C:/CS380/cs380-2021/4_assignment/CMakeFiles/ZERO_CHECK.dir

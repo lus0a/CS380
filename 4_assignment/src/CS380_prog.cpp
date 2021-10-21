@@ -47,10 +47,16 @@ void getgaussian(float **gaussian_kernel, int l){// Gaussian filter
 	float *tmp = (float*)malloc(l*l*sizeof(float));
 	int half_l = l / 2;
 	float sigma = 1.0f;
-	
+	float sum = 0.0f;
 	for(int i=-half_l; i<half_l+1; i++)
 		for(int j=-half_l; j<half_l+1; j++){
 			tmp[(i+half_l)*l+j+half_l] = 1/(2*3.1415926*sigma*sigma)*exp(-1*((i*i)+(j*j))/(2*sigma*sigma));
+			sum += tmp[(i + half_l) * l + j + half_l];
+		}
+	for (int i = 0; i < l; i++)
+		for (int j = 0; j < l; j++) {
+			tmp[i * l + j] /= sum;
+			tmp[i * l + j] *= l * l;
 		}
 	*(gaussian_kernel) = tmp;
 }
@@ -169,9 +175,9 @@ int main(int argc, char** argv)
 		}
 		else if(inputImageDisplay.is_key1()){
 			smoothsize += 2;
-			printf("set smmoth size to \n", smoothsize);
+			printf("set smmoth size to  %f \n", smoothsize);
 		} 
-		else if(inputImageDisplay.is_keyT()){ // smooth on/off
+		else if (inputImageDisplay.is_keyT()) { // smooth on/off
 			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
 			if(smooth)
 			{
@@ -189,6 +195,31 @@ int main(int argc, char** argv)
 				callsmooth(blocks, threads, d_output, d_input, dsmoothconv, smoothsize, imgheight, imgwidth);
 			}
 			cudaMemcpy(image, d_output, imgproduct*3*sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if (inputImageDisplay.is_keyY()) { // Gaussian on/off
+			cudaMemcpy(d_input, originimage, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
+			if (smooth)
+			{
+				printf("trun off Gaussian\n");
+				smooth = false;
+				cudaMemcpy(d_output, d_input, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToDevice);
+			}
+			else
+			{
+				printf("trun on Gaussian\n");
+				smooth = true;
+				getgaussian(&smoothconv, smoothsize);
+				cudaMalloc((void**)&dsmoothconv, smoothsize * smoothsize * sizeof(float));
+				cudaMemcpy(dsmoothconv, smoothconv, smoothsize * smoothsize * sizeof(float), cudaMemcpyHostToDevice);
+				callsmooth(blocks, threads, d_output, d_input, dsmoothconv, smoothsize, imgheight, imgwidth);
+			}
+			cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if (inputImageDisplay.is_keyE()) { // EdgeDetection
+			float kernel_size = 3;
+			cudaMemcpy(device_input, image1, I_size * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
+			edgeDetectionCall(numBlocks, threadPerBlocks, device_output, kernel_size, device_input, I_height, I_width);
+			cudaMemcpy(image, device_output, I_size * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 		}
 		else if(inputImageDisplay.is_keyESC()){ // quit
 			break;
