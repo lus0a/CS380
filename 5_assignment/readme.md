@@ -25,7 +25,7 @@ For testing a small hard-coded 4x4 matrix, and .txt files containing sparse matr
 2. Improve the performance of the GPU implementation
 You must use shared memory for the vector in the matrix-vector-multiplication!
 For the reduction you must use shared memory as well (as discussed in the lecture).
-Measure the performance of CPU, unoptimized and optimized GPU versions.
+Measure the performance of CPU, unoptimized (without shared memory) and optimized (with shared memory) GPU versions.
 
 3. Test using Image Deblurring Method
 Once the Conjugate Gradient method is working for the matrices it can be used to solve practical applications.
