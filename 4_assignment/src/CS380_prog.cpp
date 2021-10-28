@@ -43,7 +43,7 @@ void getconv(float **conv_kernel, int l){//mean filter
 	*(conv_kernel) = tmp;
 }
 
-void getgaussian(float **gaussian_kernel, int l){// Gaussian filter 
+void getgaussian1(float **gaussian_kernel, int l){// Gaussian filter 
 	float *tmp = (float*)malloc(l*l*sizeof(float));
 	int half_l = l / 2;
 	float sigma = 1.0f;
@@ -60,6 +60,47 @@ void getgaussian(float **gaussian_kernel, int l){// Gaussian filter
 		}
 	*(gaussian_kernel) = tmp;
 }
+
+void getgaussian(float** kernel, int length) {
+
+	double stdev = 1.0;
+	double pi = 355.0 / 113.0;
+	float* tmp = (float*)malloc(length * length * sizeof(float));
+	float sigma = length / 4.0f;;
+	int radius = floor(length / 2.0);
+	for (int i = -radius; i < radius + 1; i++)
+		for (int j = -radius; j < radius + 1; j++) {
+			tmp[(i + radius) * length + j + radius] = 1 / (2 * pi * sigma * sigma) * exp(-1 * ((i * i) + (j * j)) / (2 * sigma * sigma));
+		}
+	*(kernel) = tmp;
+}
+
+
+	//int savetojpg(cimg_library::CImg<unsigned char> img, std::string filename){
+ //		std::string prefix = "./";
+ //		std::string suffix = ".bmp";
+ //		std::string pfile = prefix + filename + suffix;
+ //		img.save(pfile.c_str());
+ //		Magick::Image magicimage;
+	//	try { 
+	//	// Read a file into image object 
+	//		magicimage.read( pfile.c_str() );
+
+ //   // Crop the image to specified size (width, height, xOffset, yOffset)
+ //    //image.crop( Geometry(100,100, 100, 100) );
+
+ //    // Write the image to a file 
+ //			suffix = ".jpg";
+ //			pfile = prefix+filename+suffix;
+	//		magicimage.write( pfile.c_str() ); 
+	//	} 
+	//	catch( std::exception &error_ ){ 
+ //			std::cout << "Caught exception: " << error_.what() << std::endl; 
+	//		return 1; 
+	//	}
+	//	return 0;	
+	//}
+
 
 // entry point
 int main(int argc, char** argv)
@@ -78,7 +119,11 @@ int main(int argc, char** argv)
 
 	// simple example taken and modified from http://cimg.eu/
 	// load image
-	cimg_library::CImg<unsigned char> image("../data/images/lichtenstein_full.bmp");
+	cimg_library::CImg<unsigned char> image("../data/images/lichtenstein_full.bmp"); //512
+	//cimg_library::CImg<unsigned char> image("../data/images/lichtenstein_med.bmp"); //128
+	//cimg_library::CImg<unsigned char> image("../data/images/lichtenstein_small.bmp"); //64
+
+
 	// create image for simple visualization
 	cimg_library::CImg<unsigned char> visualization(512, 300, 1, 3, 0);
 	const unsigned char red[] = { 255, 0, 0 };
@@ -95,8 +140,12 @@ int main(int argc, char** argv)
 	float brightnessfactor = 1.0f;
 	float contrastfactor = 1.0f;
 	float saturationfactor = 1.0f;
+	float sharpenfactor = 1.0f;
 	bool smooth = false;
-	int smoothsize = 3;
+	bool edge = false;
+	bool sharp = false;
+	bool sharedGauss = false;
+	float smoothsize = 3.0f;
 	float * smoothconv, * dsmoothconv;
 	bool gauss = false;
 	bool edgedetection = false;
@@ -106,7 +155,7 @@ int main(int argc, char** argv)
 	cudaMalloc((void **)&d_output, imgproduct*3*sizeof(unsigned char));
 	cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
 
-	dim3 threads(8,8);
+	dim3 threads(TILE_SIZE, TILE_SIZE);
 	dim3 blocks(imgwidth/threads.x, imgheight/threads.y);
 
 	// create displays 
@@ -175,7 +224,8 @@ int main(int argc, char** argv)
 		}
 		else if(inputImageDisplay.is_key1()){
 			smoothsize += 2;
-			printf("set smmoth size to  %f \n", smoothsize);
+			printf("set smmoth size to %f \n", smoothsize);
+			
 		} 
 		else if (inputImageDisplay.is_keyT()) { // smooth on/off
 			cudaMemcpy(d_input, originimage, imgproduct*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
@@ -208,19 +258,90 @@ int main(int argc, char** argv)
 			{
 				printf("trun on Gaussian\n");
 				smooth = true;
-				getgaussian(&smoothconv, smoothsize);
+				getgaussian1(&smoothconv, smoothsize);
 				cudaMalloc((void**)&dsmoothconv, smoothsize * smoothsize * sizeof(float));
 				cudaMemcpy(dsmoothconv, smoothconv, smoothsize * smoothsize * sizeof(float), cudaMemcpyHostToDevice);
 				callsmooth(blocks, threads, d_output, d_input, dsmoothconv, smoothsize, imgheight, imgwidth);
 			}
 			cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 		}
-		else if (inputImageDisplay.is_keyE()) { // EdgeDetection
-			float kernel_size = 3;
-			cudaMemcpy(device_input, image1, I_size * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
-			edgeDetectionCall(numBlocks, threadPerBlocks, device_output, kernel_size, device_input, I_height, I_width);
-			cudaMemcpy(image, device_output, I_size * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		else if (inputImageDisplay.is_keyU()) { // SharedGaussian on/off
+			cudaMemcpy(d_input, originimage, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
+			if (sharedGauss)
+			{
+				printf("trun off SharedGaussian\n");
+				sharedGauss = false;
+				cudaMemcpy(d_output, d_input, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToDevice);
+			}
+			else
+			{
+				printf("trun on SharedGaussian, the numBlock = %i \n", blocks.x);
+				printf("the numThread = %i \n", threads.x);
+				sharedGauss = true;
+				getgaussian(&smoothconv, KERNEL_SIZE);
+				cudaMalloc((void**)&dsmoothconv, KERNEL_SIZE* KERNEL_SIZE * sizeof(float));
+				cudaMemcpy(dsmoothconv, smoothconv, KERNEL_SIZE* KERNEL_SIZE * sizeof(float), cudaMemcpyHostToDevice);
+				callsharedGauss(blocks, threads, d_output, d_input, dsmoothconv, imgheight, imgwidth);
+			}
+			cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 		}
+		else if (inputImageDisplay.is_keyE()) { // EdgeDetection
+			cudaMemcpy(d_input, originimage, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
+			if (edge)
+			{
+				printf("trun off EdgeDetection\n");
+				edge = false;
+				cudaMemcpy(d_output, d_input, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToDevice);
+			}
+			else
+			{
+				printf("trun on EdgeDetection\n");
+				edge = true;
+				calledgedetection(blocks, threads, d_output, d_input, imgheight, imgwidth);
+			}
+			cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if (inputImageDisplay.is_keyS()) { // Sharpen
+			cudaMemcpy(d_input, originimage, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
+			if (sharp)
+			{
+				printf("trun off Sharpen\n");
+				sharp = false;
+				cudaMemcpy(d_output, d_input, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToDevice);
+			}
+			else
+			{
+				printf("trun on Sharpen\n");
+				sharp = true;
+				callsharpen(blocks, threads, d_output, sharpenfactor, d_input, imgheight, imgwidth);
+			}
+			cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if (inputImageDisplay.is_keyP()) { //Profiling kernels
+			cudaEvent_t start, stop;
+			cudaEventCreate(&start);
+			cudaEventCreate(&stop);
+			cudaMemcpy(d_input, originimage, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
+
+			getgaussian(&smoothconv, smoothsize);
+			cudaMalloc((void**)&dsmoothconv, smoothsize* smoothsize * sizeof(float));
+			cudaMemcpy(dsmoothconv, smoothconv, smoothsize* smoothsize * sizeof(float), cudaMemcpyHostToDevice);
+			
+			cudaEventRecord(start);
+			callsmooth(blocks, threads, d_output, d_input, dsmoothconv, smoothsize, imgheight, imgwidth);
+			cudaEventRecord(stop);
+
+			cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+			cudaEventSynchronize(stop);
+
+			float milliseconds = 0;
+			cudaEventElapsedTime(&milliseconds, start, stop);
+
+			printf("gauss kernel elapsed time in miliseconds: %f \n", milliseconds);
+
+		}
+
 		else if(inputImageDisplay.is_keyESC()){ // quit
 			break;
 		}
