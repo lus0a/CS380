@@ -22,7 +22,7 @@ void testCudaCall() {
 	const unsigned int N = 1024;
 	float* device_array;
 	cudaMalloc(&device_array, N * sizeof(float));
-	testArray << <1, N >> > (device_array, -0.5f);
+	testArray <<<1, N >>> (device_array, -0.5f);
 	float x[N];
 	cudaMemcpy(x, device_array, N * sizeof(float), cudaMemcpyDeviceToHost);
 	std::cout << "quick and dirty test of CUDA setup: " << x[0] << " " << x[1] << " " << x[1023] << std::endl;
@@ -277,6 +277,53 @@ void callsharpen(dim3 blocks, dim3 threads, unsigned char* out_image, float shar
 }
 
 __global__
+void constantGauss(unsigned char* out_image, unsigned char* in_image, int height, int width) {
+	int pos_x = blockIdx.x * blockDim.x + threadIdx.x;
+	int pos_y = blockIdx.y * blockDim.y + threadIdx.y;
+
+	if (pos_x < width && pos_y < height) {
+
+		float R = float(0.0f);
+		float G = float(0.0f);
+		float B = float(0.0f);
+		int K_2 = KERNEL_SIZE / 2;
+		float size = KERNEL_SIZE * KERNEL_SIZE;
+
+		for (int i = (-K_2); i <= K_2; i++)
+			for (int j = (-K_2); j <= K_2; j++)
+			{
+				int idx = (i + K_2) * KERNEL_SIZE + j + K_2; 
+				if (pos_x + i > 0 && pos_y + i > 0 && pos_x + j <= width && pos_y + i <= height)
+				{
+					R += (float)in_image[(pos_x + i) * width + (pos_y + j)] * M[idx];
+					G += (float)in_image[(height + (pos_x + i)) * width + (pos_y + j)] * M[idx];
+					B += (float)in_image[(height * 2 + (pos_x + i)) * width + (pos_y + j)] * M[idx];
+				}
+			}
+
+		//R = R > 255 ? 255 : R < 0 ? 0 : R;
+		//G = G > 255 ? 255 : G < 0 ? 0 : G;
+		//B = B > 255 ? 255 : B < 0 ? 0 : B;
+		R = R / size;
+		G = G / size;
+		B = B / size;
+		out_image[pos_x * width + pos_y] = (unsigned char)(R);
+		out_image[(height + pos_x) * width + pos_y] = (unsigned char)(G);
+		out_image[(height * 2 + pos_x) * width + pos_y] = (unsigned char)(B);
+
+	}
+
+}
+void callconstantGauss(dim3 blocks, dim3 threads, unsigned char* out_image, unsigned char* d_input, int height, int width)
+{
+	constantGauss <<< blocks, threads >>> (out_image, d_input, height, width);
+	cudaError_t err = cudaGetLastError();
+	if (err != cudaSuccess)
+		printf("Error: %s\n", cudaGetErrorString(err));
+}
+
+
+__global__
 void sharedGauss(unsigned char* out_image, unsigned char* in_image, float* conv_kernel, int height, int width)
 {
 	int tx = threadIdx.x;
@@ -313,21 +360,18 @@ void sharedGauss(unsigned char* out_image, unsigned char* in_image, float* conv_
 		float G = float(0.0f);
 		float B = float(0.0f);
 		for ( int i = 0; i < KERNEL_SIZE; i++)
-		{
 			for ( int j = 0; j < KERNEL_SIZE; j++)
 			{
 				int convidx = i * KERNEL_SIZE + j;
 				R += (float)N_ds[i + ty][j + tx][0] * conv_kernel[convidx];
 				G += (float)N_ds[i + ty][j + tx][1] * conv_kernel[convidx];
 				B += (float)N_ds[i + ty][j + tx][2] * conv_kernel[convidx];
+
 			}
-		}
-		if (R > 255)
-			R = 255;
-		if (G > 255)
-			G = 255;
-		if (B > 255)
-			B = 255;
+		R = R > 255 ? 255 : R < 0 ? 0 : R;
+		G = G > 255 ? 255 : G < 0 ? 0 : G;
+		B = B > 255 ? 255 : B < 0 ? 0 : B;
+
 		if (row_o < height && col_o < width)
 		{
 			out_image[row_o * width + col_o] = (unsigned char)(R);
@@ -336,9 +380,11 @@ void sharedGauss(unsigned char* out_image, unsigned char* in_image, float* conv_
 		}
 	}
 }
+
 void callsharedGauss(dim3 blocks, dim3 threads, unsigned char* out_image, unsigned char* d_input, float* conv_kernel, int height, int width)
 {
-	sharedGauss << <blocks, threads, TILE_SIZE* TILE_SIZE * 3 * sizeof(unsigned char) >> > (out_image, d_input, conv_kernel, height, width);
+	sharedGauss <<< blocks, threads >> > (out_image, d_input, conv_kernel, height, width);
+	// sharedGauss << <blocks, threads, TILE_SIZE* TILE_SIZE * 3 * sizeof(unsigned char) >> > (out_image, d_input, conv_kernel, height, width);
 	cudaError_t err = cudaGetLastError();
 	if (err != cudaSuccess)
 		printf("Error: %s\n", cudaGetErrorString(err));

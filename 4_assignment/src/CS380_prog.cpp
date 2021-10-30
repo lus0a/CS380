@@ -144,6 +144,7 @@ int main(int argc, char** argv)
 	bool smooth = false;
 	bool edge = false;
 	bool sharp = false;
+	bool constantGauss = false;
 	bool sharedGauss = false;
 	float smoothsize = 3.0f;
 	float * smoothconv, * dsmoothconv;
@@ -265,13 +266,53 @@ int main(int argc, char** argv)
 			}
 			cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 		}
+		else if (inputImageDisplay.is_keyI()) { // ConstantGaussian on/off
+			cudaEvent_t start, stop;
+			cudaEventCreate(&start);
+			cudaEventCreate(&stop);
+			cudaMemcpy(d_input, originimage, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
+			if (constantGauss)
+			{
+				printf("trun off ConstantGaussian\n");
+				constantGauss = false;
+				cudaMemcpy(d_output, d_input, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToDevice);
+				cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+			}
+			else
+			{
+				printf("trun on ConstantGaussian, the numBlock = %i \n", blocks.x);
+				printf("the numThread = %i \n", threads.x);
+				constantGauss = true;
+				getgaussian(&smoothconv, KERNEL_SIZE);
+				cudaMalloc((void**)&M, KERNEL_SIZE * KERNEL_SIZE * sizeof(float));
+
+				cudaMemcpyToSymbol(M, smoothconv, KERNEL_SIZE* KERNEL_SIZE * sizeof(float));
+
+				cudaEventRecord(start);
+				callconstantGauss(blocks, threads, d_output, d_input, imgheight, imgwidth);
+				cudaEventRecord(stop);
+
+				cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+				cudaEventSynchronize(stop);
+
+				float milliseconds = 0;
+				cudaEventElapsedTime(&milliseconds, start, stop);
+
+				printf("gauss kernel elapsed time in miliseconds: %f \n", milliseconds);
+			}
+		}
 		else if (inputImageDisplay.is_keyU()) { // SharedGaussian on/off
+			cudaEvent_t start, stop;
+			cudaEventCreate(&start);
+			cudaEventCreate(&stop);
 			cudaMemcpy(d_input, originimage, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
 			if (sharedGauss)
 			{
 				printf("trun off SharedGaussian\n");
 				sharedGauss = false;
 				cudaMemcpy(d_output, d_input, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToDevice);
+				cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 			}
 			else
 			{
@@ -281,9 +322,19 @@ int main(int argc, char** argv)
 				getgaussian(&smoothconv, KERNEL_SIZE);
 				cudaMalloc((void**)&dsmoothconv, KERNEL_SIZE* KERNEL_SIZE * sizeof(float));
 				cudaMemcpy(dsmoothconv, smoothconv, KERNEL_SIZE* KERNEL_SIZE * sizeof(float), cudaMemcpyHostToDevice);
+				cudaEventRecord(start);
 				callsharedGauss(blocks, threads, d_output, d_input, dsmoothconv, imgheight, imgwidth);
+				cudaEventRecord(stop);
+
+				cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+				cudaEventSynchronize(stop);
+
+				float milliseconds = 0;
+				cudaEventElapsedTime(&milliseconds, start, stop);
+
+				printf("gauss kernel elapsed time in miliseconds: %f \n", milliseconds);
 			}
-			cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 		}
 		else if (inputImageDisplay.is_keyE()) { // EdgeDetection
 			cudaMemcpy(d_input, originimage, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
