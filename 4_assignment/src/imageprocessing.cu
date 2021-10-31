@@ -295,18 +295,18 @@ void constantGauss(unsigned char* out_image, unsigned char* in_image, int height
 				int idx = (i + K_2) * KERNEL_SIZE + j + K_2; 
 				if (pos_x + i > 0 && pos_y + i > 0 && pos_x + j <= width && pos_y + i <= height)
 				{
-					R += (float)in_image[(pos_x + i) * width + (pos_y + j)] * M[idx];
-					G += (float)in_image[(height + (pos_x + i)) * width + (pos_y + j)] * M[idx];
-					B += (float)in_image[(height * 2 + (pos_x + i)) * width + (pos_y + j)] * M[idx];
+					R += (float)in_image[(pos_x + i) * width + (pos_y + j)] * Ma[idx];
+					G += (float)in_image[(height + (pos_x + i)) * width + (pos_y + j)] * Ma[idx];
+					B += (float)in_image[(height * 2 + (pos_x + i)) * width + (pos_y + j)] * Ma[idx];
 				}
 			}
 
-		//R = R > 255 ? 255 : R < 0 ? 0 : R;
-		//G = G > 255 ? 255 : G < 0 ? 0 : G;
-		//B = B > 255 ? 255 : B < 0 ? 0 : B;
-		R = R / size;
-		G = G / size;
-		B = B / size;
+		R = R > 255 ? 255 : R < 0 ? 0 : R;
+		G = G > 255 ? 255 : G < 0 ? 0 : G;
+		B = B > 255 ? 255 : B < 0 ? 0 : B;
+		//R = R / size;
+		//G = G / size;
+		//B = B / size;
 		out_image[pos_x * width + pos_y] = (unsigned char)(R);
 		out_image[(height + pos_x) * width + pos_y] = (unsigned char)(G);
 		out_image[(height * 2 + pos_x) * width + pos_y] = (unsigned char)(B);

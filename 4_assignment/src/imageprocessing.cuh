@@ -1,9 +1,9 @@
 #pragma once
-#define KERNEL_SIZE 15
+#define KERNEL_SIZE 9
 #define TILE_SIZE 32
 #define BLOCK_SIZE (TILE_SIZE + KERNEL_SIZE - 1)
 
-__constant__ float M[KERNEL_SIZE* KERNEL_SIZE];
+__constant__ float Ma[KERNEL_SIZE* KERNEL_SIZE];
 
 __global__ void initArray(float* dst, float value);
 

@@ -146,7 +146,7 @@ int main(int argc, char** argv)
 	bool sharp = false;
 	bool constantGauss = false;
 	bool sharedGauss = false;
-	float smoothsize = 3.0f;
+	float smoothsize = 9.0f;
 	float * smoothconv, * dsmoothconv;
 	bool gauss = false;
 	bool edgedetection = false;
@@ -280,13 +280,13 @@ int main(int argc, char** argv)
 			}
 			else
 			{
-				printf("trun on ConstantGaussian, the numBlock = %i \n", blocks.x);
+				printf("trun on ConstantGaussian, the numBlock = %i, ", blocks.x);
 				printf("the numThread = %i \n", threads.x);
 				constantGauss = true;
-				getgaussian(&smoothconv, KERNEL_SIZE);
-				cudaMalloc((void**)&M, KERNEL_SIZE * KERNEL_SIZE * sizeof(float));
+				getgaussian1(&smoothconv, KERNEL_SIZE);
+				cudaMalloc((void**)&Ma, KERNEL_SIZE * KERNEL_SIZE * sizeof(float));
 
-				cudaMemcpyToSymbol(M, smoothconv, KERNEL_SIZE* KERNEL_SIZE * sizeof(float));
+				cudaMemcpyToSymbol(Ma, &smoothconv, KERNEL_SIZE* KERNEL_SIZE * sizeof(float));
 
 				cudaEventRecord(start);
 				callconstantGauss(blocks, threads, d_output, d_input, imgheight, imgwidth);
@@ -299,6 +299,7 @@ int main(int argc, char** argv)
 				float milliseconds = 0;
 				cudaEventElapsedTime(&milliseconds, start, stop);
 
+				printf("the kernel size = %i \n", KERNEL_SIZE);
 				printf("gauss kernel elapsed time in miliseconds: %f \n", milliseconds);
 			}
 		}
@@ -316,7 +317,7 @@ int main(int argc, char** argv)
 			}
 			else
 			{
-				printf("trun on SharedGaussian, the numBlock = %i \n", blocks.x);
+				printf("trun on SharedGaussian, the numBlock = %i, ", blocks.x);
 				printf("the numThread = %i \n", threads.x);
 				sharedGauss = true;
 				getgaussian(&smoothconv, KERNEL_SIZE);
@@ -333,6 +334,7 @@ int main(int argc, char** argv)
 				float milliseconds = 0;
 				cudaEventElapsedTime(&milliseconds, start, stop);
 
+				printf("the kernel size = %i \n", KERNEL_SIZE);
 				printf("gauss kernel elapsed time in miliseconds: %f \n", milliseconds);
 			}
 		}
@@ -374,7 +376,7 @@ int main(int argc, char** argv)
 			cudaEventCreate(&stop);
 			cudaMemcpy(d_input, originimage, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
 
-			getgaussian(&smoothconv, smoothsize);
+			getgaussian1(&smoothconv, smoothsize);
 			cudaMalloc((void**)&dsmoothconv, smoothsize* smoothsize * sizeof(float));
 			cudaMemcpy(dsmoothconv, smoothconv, smoothsize* smoothsize * sizeof(float), cudaMemcpyHostToDevice);
 			
@@ -388,7 +390,9 @@ int main(int argc, char** argv)
 
 			float milliseconds = 0;
 			cudaEventElapsedTime(&milliseconds, start, stop);
-
+			printf("trun on Gaussian, the numBlock = %i", blocks.x);
+			printf("the numThread = %i \n", threads.x);
+			printf("the kernel size = %f \n", smoothsize);
 			printf("gauss kernel elapsed time in miliseconds: %f \n", milliseconds);
 
 		}
