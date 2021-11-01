@@ -390,7 +390,7 @@ int main(int argc, char** argv)
 
 			float milliseconds = 0;
 			cudaEventElapsedTime(&milliseconds, start, stop);
-			printf("trun on Unroll Gaussian, the numBlock = %i", blocks.x);
+			printf("trun on Unroll Gaussian, the numBlock = %i, ", blocks.x);
 			printf("the numThread = %i \n", threads.x);
 			printf("the kernel size = %f \n", smoothsize);
 			printf("gauss kernel elapsed time in miliseconds: %f \n", milliseconds);
