@@ -286,7 +286,7 @@ int main(int argc, char** argv)
 				getgaussian1(&smoothconv, KERNEL_SIZE);
 				//cudaMalloc((void**)&Ma, KERNEL_SIZE * KERNEL_SIZE * sizeof(float));
 
-				cudaMemcpyToSymbol(Ma, smoothconv, KERNEL_SIZE* KERNEL_SIZE * sizeof(float));
+				cudaMemcpyToSymbol(Ma, &smoothconv, KERNEL_SIZE* KERNEL_SIZE * sizeof(float), 0, cudaMemcpyHostToDevice);
 
 				cudaEventRecord(start);
 				callconstantGauss(blocks, threads, d_output, d_input, imgheight, imgwidth);
