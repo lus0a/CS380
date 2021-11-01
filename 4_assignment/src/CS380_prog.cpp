@@ -370,7 +370,7 @@ int main(int argc, char** argv)
 			}
 			cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 		}
-		else if (inputImageDisplay.is_keyP()) { //Unroll
+		else if (inputImageDisplay.is_keyO()) { //Unroll
 			cudaEvent_t start, stop;
 			cudaEventCreate(&start);
 			cudaEventCreate(&stop);
