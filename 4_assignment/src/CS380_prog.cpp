@@ -284,9 +284,9 @@ int main(int argc, char** argv)
 				printf("the numThread = %i \n", threads.x);
 				constantGauss = true;
 				getgaussian1(&smoothconv, KERNEL_SIZE);
-				cudaMalloc((void**)&Ma, KERNEL_SIZE * KERNEL_SIZE * sizeof(float));
+				//cudaMalloc((void**)&Ma, KERNEL_SIZE * KERNEL_SIZE * sizeof(float));
 
-				cudaMemcpyToSymbol(Ma, &smoothconv, KERNEL_SIZE* KERNEL_SIZE * sizeof(float));
+				cudaMemcpyToSymbol(Ma, smoothconv, KERNEL_SIZE* KERNEL_SIZE * sizeof(float));
 
 				cudaEventRecord(start);
 				callconstantGauss(blocks, threads, d_output, d_input, imgheight, imgwidth);
@@ -369,6 +369,32 @@ int main(int argc, char** argv)
 				callsharpen(blocks, threads, d_output, sharpenfactor, d_input, imgheight, imgwidth);
 			}
 			cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		}
+		else if (inputImageDisplay.is_keyP()) { //Unroll
+			cudaEvent_t start, stop;
+			cudaEventCreate(&start);
+			cudaEventCreate(&stop);
+			cudaMemcpy(d_input, originimage, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
+
+			getgaussian1(&smoothconv, smoothsize);
+			cudaMalloc((void**)&dsmoothconv, smoothsize* smoothsize * sizeof(float));
+			cudaMemcpy(dsmoothconv, smoothconv, smoothsize* smoothsize * sizeof(float), cudaMemcpyHostToDevice);
+			
+			cudaEventRecord(start);
+			callUnrollsmooth(blocks, threads, d_output, d_input, dsmoothconv, smoothsize, imgheight, imgwidth);
+			cudaEventRecord(stop);
+
+			cudaMemcpy(image, d_output, imgproduct * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+			cudaEventSynchronize(stop);
+
+			float milliseconds = 0;
+			cudaEventElapsedTime(&milliseconds, start, stop);
+			printf("trun on Unroll Gaussian, the numBlock = %i", blocks.x);
+			printf("the numThread = %i \n", threads.x);
+			printf("the kernel size = %f \n", smoothsize);
+			printf("gauss kernel elapsed time in miliseconds: %f \n", milliseconds);
+
 		}
 		else if (inputImageDisplay.is_keyP()) { //Profiling kernels
 			cudaEvent_t start, stop;
