@@ -36,6 +36,22 @@ _gpu_vector_op_( int op, float fac0, float fac1, float *a, float *b, float *x, i
 		-> if the thread index is >= dim return!
 		
 	*/
+	int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (idx >= dim) return;
+	switch(op){
+		case(-1): // NONE 
+			x[idx] = a[idx] * fac0;
+			break;
+		case(0):  // ADD 
+			x[idx] = a[idx] * fac0 + b[idx] * fac1;
+			break;
+		case(1):  // SUB 
+			x[idx] = a[idx] * fac0 - b[idx] * fac1;
+			break;
+		case(2):  // MULT
+			x[idx] = a[idx] * fac0 * b[idx] * fac1;
+			break;
+	}
 }
 
 
@@ -55,11 +71,99 @@ _gpu_matrix_vector_( int op, float *A, float *b, float *c, float *x, int dim )
 		HINT: remember to safeguard the index (the thread id might be larger than the array size)!
 		-> if the thread index is >= dim return!
 	*/
-	
-	
+	extern __shared__ float shared_A[];
+	extern __shared__ float shared_b[];
+	extern __shared__ float shared_c[];
+
+	int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	int Nloop = dim/blockDim.x + 1;
+	for (int i=0; i<Nloop; i++)
+	{
+		int loopIdx= i*blockDim.x + threadIdx.x;
+		if (loopIdx < dim)
+		{
+			shared_b[loopIdx] = b[loopIdx]; //load b into shared memory
+			shared_c[loopIdx] = c[loopIdx]; //load c into shared memory
+			for (int j=0; j<dim; j++) //load A into shared memory
+			{
+				int colIdx = j*dim + loopIdx;
+				shared_A[colIdx]=A[colIdx];
+			}
+		}
+	}
+	__syncthreads();
+	if (idx >= dim) return;
+	float out = 0.0f;
+	for (int i=0; i<dim; i++)
+	{
+		out += shared_A[idx * dim + i] * shared_b[i];
+	}
+	switch(op){
+		case(-1): // NONE 
+			x[idx] = out;
+			break;
+		case(0):  // ADD 
+			x[idx] = out + shared_c[idx];
+			break;
+		case(1):  // SUB 
+			x[idx] = out - shared_c[idx];
+			break;
+		case(2):  // DOT PRODUCT
+			x[idx] = out * shared_c[idx];
+			break;
+	}
 }
 
+// __global__ void
+// _gpu_vector_reduce_(int op, float* d_a, int dim){
 
+// 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
+// 	for(unsigned int s=1; s<dim; s*=2){
+// 		if (idx % (2*s) == 0 && idx + s < dim){
+// 			switch(op){
+// 				case(0):
+// 					d_a[idx] += d_a[idx + s];
+// 					break;
+// 				case(2):
+// 					d_a[idx] *= d_a[idx + s];
+// 			}
+// 		}
+// 	}
+// }
+
+__global__ void
+_gpu_vector_reduce_(int op, float *g_data, int n){
+    // figure out exponent of next larger power of 2
+    int exponent = ceilf(log2f(n));
+    // calculate next larger power of 2
+    int size = (int)powf(2, exponent);
+    extern __shared__ float partialSum[];
+
+    int tx = threadIdx.x;
+    int i = tx + blockIdx.x * blockDim.x;
+
+    if (i < n){
+        partialSum[tx] = g_data[i];
+    }
+
+    for (int stride = size / 2; stride > 0; stride >>= 1){
+        __syncthreads();
+
+        if ((tx < stride) && (tx + stride) < n){
+			switch(op){
+				case(0): // ADD
+					partialSum[tx] += partialSum[tx + stride];
+					break;
+				case(2): // MULT
+					partialSum[tx] *= partialSum[tx + stride];
+			} 
+        }
+    }
+
+    if (tx == 0){
+        g_data[blockIdx.x] = partialSum[tx];
+    }
+}
 
 
 // returns SUM[d_a * d_b]
@@ -73,8 +177,19 @@ float gpuReduceSUM( float* d_a, float *d_b, float* d_x, int dim, int nBlocks, in
 		implement reduction as discussed in the lecture using shared memory.
 		
 	*/
+	float sum = 0.0f;
+	_gpu_vector_op_<<<nBlocks, nThreads>>>(CL_MULT, 1.0f, 1.0f, d_a, d_b, d_x, dim);
+	checkCudaErrors( cudaMemcpy( &sum, d_x, 1 * sizeof( float ), cudaMemcpyDeviceToHost ) );
+	printf("sum is %f \n", sum);
+
+	checkCudaErrors( cudaDeviceSynchronize() );
+
+	_gpu_vector_reduce_<<<nBlocks, nThreads>>>(CL_ADD, d_x, dim);
+
+	checkCudaErrors( cudaDeviceSynchronize() );
 	
-	float sum = 0;
+	checkCudaErrors( cudaMemcpy( &sum, d_x, 1 * sizeof( float ), cudaMemcpyDeviceToHost ) );
+	printf("sum is %f \n", sum);
 	return sum;
 }
 
