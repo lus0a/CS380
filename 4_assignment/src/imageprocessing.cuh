@@ -11,6 +11,7 @@ __global__ void brightness(unsigned char* out_image, float brightfactor, unsigne
 __global__ void contrast(unsigned char* out_image, float contrastfactor, unsigned char* in_image, int height, int width);
 __global__ void saturation(unsigned char* out_image, float sharpenfactor, unsigned char* in_image, int height, int width);
 __global__ void smooth(unsigned char* out_image, unsigned char* in_image,  float *conv_kernel, int length, int height, int width);
+__global__ void Unrollsmooth(unsigned char* out_image, unsigned char* in_image,  float *conv_kernel, int length, int height, int width);
 __global__ void edgedetection(unsigned char* out_image, unsigned char* in_image, int height, int width);
 __global__ void sharpen(unsigned char* out_image, float sharpenfactor, unsigned char* in_image, int height, int width);
 __global__ void constantGauss(unsigned char* out_image, unsigned char* in_image, int height, int width);
@@ -27,6 +28,7 @@ void callbrightness(dim3 blocks, dim3 threads, unsigned char* out_image, float b
 void callcontrast(dim3 blocks, dim3 threads, unsigned char* out_image, float contrastfactor, unsigned char* d_input, int height, int width);
 void callsaturation(dim3 blocks, dim3 threads, unsigned char* out_image, float saturationfactor, unsigned char* d_input, int height, int width);
 void callsmooth(dim3 blocks, dim3 threads, unsigned char* out_image,  unsigned char* d_input, float *conv_kernel, int length,int height, int width);
+void callUnrollsmooth(dim3 blocks, dim3 threads, unsigned char* out_image,  unsigned char* d_input, float *conv_kernel, int length,int height, int width);
 void calledgedetection(dim3 blocks, dim3 threads, unsigned char* out_image, unsigned char* d_input, int height, int width);
 void callsharpen(dim3 blocks, dim3 threads, unsigned char* out_image, float sharpenfactor, unsigned char* d_input, int height, int width);
 void callconstantGauss(dim3 blocks, dim3 threads, unsigned char* out_image, unsigned char* d_input, int height, int width);

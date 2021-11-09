@@ -161,6 +161,52 @@ void callsmooth(dim3 blocks, dim3 threads, unsigned char* out_image,  unsigned c
 	  printf("Error: %s\n", cudaGetErrorString(err));
 }
 
+__global__
+void Unrollsmooth(unsigned char* out_image, unsigned char* in_image, float *conv_kernel, int halfl, int height, int width)
+{
+	int pos_x = blockIdx.x * blockDim.x + threadIdx.x;//x coordinate of pixel
+	int pos_y = blockIdx.y * blockDim.y + threadIdx.y;//y coordinate of pixel
+
+	if (pos_x < width && pos_y < height)
+	{
+		int l = 2*halfl + 1;
+		float size = l*l;
+		float r = float(0.0f);
+		float g = float(0.0f);
+		float b = float(0.0f);
+		float originr = ((float)in_image[pos_x * width + pos_y]) / 255.0f;
+		float origing = ((float)in_image[(height + pos_x) * width + pos_y]) / 255.0f;
+		float originb = ((float)in_image[(height * 2 + pos_x) * width + pos_y]) / 255.0f;
+		#pragma unroll
+		for(int i=(-halfl); i<=halfl; i++){
+			for(int j=(-halfl); j<=halfl; j++){
+				int convidx = (i+halfl)*l+j+halfl;
+				if(pos_x + i > 0 && pos_y + i > 0 && pos_x + j <= width && pos_y + i <= height)
+				{
+					r += conv_kernel[convidx]*((float)in_image[(pos_x+i) * width + (pos_y+j)]); 
+					g += conv_kernel[convidx]*((float)in_image[(height + (pos_x+i)) * width + (pos_y+j)]);
+					b += conv_kernel[convidx]*((float)in_image[(height * 2 + (pos_x+i)) * width + (pos_y+j)]);
+				}
+			}
+		}
+		r /= size;
+		g /= size;
+		b /= size;
+		out_image[pos_x * width + pos_y] = (unsigned char)(r);
+		out_image[(height + pos_x) * width + pos_y] = (unsigned char)(g);
+		out_image[(height * 2 + pos_x) * width + pos_y] = (unsigned char)(b);
+		
+	}
+}
+void callUnrollsmooth(dim3 blocks, dim3 threads, unsigned char* out_image,  unsigned char* d_input, float *conv_kernel, int length,int height, int width)
+{
+	int halfl = length/2;
+	Unrollsmooth <<<blocks, threads>>> (out_image, d_input, conv_kernel, halfl, height, width);
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) 
+	  printf("Error: %s\n", cudaGetErrorString(err));
+}
+
 
 __global__
 void edgedetection(unsigned char* out_image, unsigned char* in_image, int height, int width)
