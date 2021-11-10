@@ -274,6 +274,32 @@ void vector_op(int op, float fac0, float fac1, float* a, float* b, float* x, int
 		with op = {+,-,*, NONE}.
 		NONE means x = fac0 * a   (b might be NULL)
 	*/
+	switch(op){
+		case(-1): // NONE
+			for (int i=0; i<dim; i++)
+			{
+				x[i] = a[i] * fac0;
+			}
+			break;
+		case(0):  // ADD 
+			for (int i=0; i<dim; i++)
+			{
+				x[i] = a[i] * fac0 + b[i] * fac1;
+			}
+			break;
+		case(1):  // SUB 
+			for (int i=0; i<dim; i++)
+			{
+				x[i] = a[i] * fac0 - b[i] * fac1;
+			}
+			break;
+		case(2):  // MULT
+			for (int i=0; i<dim; i++)
+			{
+				x[i] = a[i] * fac0 * b[i] * fac1;
+			}
+			break;
+	}
 }
 
 
@@ -289,6 +315,28 @@ void matrix_vector(int op, float* A, float* b, float* c, float* x, int dim)
 		with op = {+,-,*,NONE}.
 		NONE means x = A * b     (c might be NULL)
 	*/
+	for(int j=0; j<dim; j++){
+		float out = 0.0;
+
+		for(int i=0; i<dim; i++){
+			out += A[j * dim + i] * s_b[i];
+		}
+		switch(op){
+			case(-1): // NONE
+				x[j] = out;
+				break;
+			case(0):  // ADD 
+				x[j] = out + c[j];
+				break;
+			case(1):  // SUB 
+				x[j] = out - c[j];
+				break;
+			case(2):  // MULT
+				x[j] = out * c[j];
+				break;
+		}
+	}
+	
 }
 
 
@@ -302,6 +350,9 @@ float reduceSUM(float* d_a, float* d_b, int dim) {
 	*/
 
 	float sum = 0;
+	for (int i=0; i<dim; i++){
+		sum += d_a[i]*d_b[i];
+	}
 	return sum;
 }
 
