@@ -177,9 +177,9 @@ void Unrollsmooth(unsigned char* out_image, unsigned char* in_image, float *conv
 		float originr = ((float)in_image[pos_x * width + pos_y]) / 255.0f;
 		float origing = ((float)in_image[(height + pos_x) * width + pos_y]) / 255.0f;
 		float originb = ((float)in_image[(height * 2 + pos_x) * width + pos_y]) / 255.0f;
-		#pragma unroll
-		for(int i=(-halfl); i<=halfl; i++){
-			for(int j=(-halfl); j<=halfl; j++){
+		#pragma unroll (9)
+		for(int i=(-4); i<=4; i++){
+			for(int j=(-4); j<=4; j++){
 				int convidx = (i+halfl)*l+j+halfl;
 				if(pos_x + i > 0 && pos_y + i > 0 && pos_x + j <= width && pos_y + i <= height)
 				{

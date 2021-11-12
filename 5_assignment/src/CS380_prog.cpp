@@ -319,7 +319,7 @@ void matrix_vector(int op, float* A, float* b, float* c, float* x, int dim)
 		float out = 0.0;
 
 		for(int i=0; i<dim; i++){
-			out += A[j * dim + i] * s_b[i];
+			out += A[j * dim + i] * b[i];
 		}
 		switch(op){
 			case(-1): // NONE

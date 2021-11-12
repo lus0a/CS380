@@ -114,22 +114,6 @@ _gpu_matrix_vector_( int op, float *A, float *b, float *c, float *x, int dim )
 	}
 }
 
-// __global__ void
-// _gpu_vector_reduce_(int op, float* d_a, int dim){
-
-// 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
-// 	for(unsigned int s=1; s<dim; s*=2){
-// 		if (idx % (2*s) == 0 && idx + s < dim){
-// 			switch(op){
-// 				case(0):
-// 					d_a[idx] += d_a[idx + s];
-// 					break;
-// 				case(2):
-// 					d_a[idx] *= d_a[idx + s];
-// 			}
-// 		}
-// 	}
-// }
 
 __global__ void
 _gpu_vector_reduce_(int op, float *g_data, int n){
@@ -255,16 +239,16 @@ void computeConjugateGradientGPU( float *h_A, float *h_b, float *h_x, int dim, f
 	// ALGORITHM: r_0 = b-Ax_0
 	// r_0 = Ax_0 - b
 	_gpu_matrix_vector_<<< nBlocks, nThreads, 0 >>>( CL_SUB, d_A, d_x, d_b, d_r, dim );
-	checkCudaErrors( cudaDeviceSynchronize() );
+	//checkCudaErrors( cudaDeviceSynchronize() );
 	
 
 	// r_0 = -r_0
 	_gpu_vector_op_<<< nBlocks, nThreads >>>( NONE, -1.0f, 0.0f, d_r, NULL, d_r, dim );
-	checkCudaErrors( cudaDeviceSynchronize() );
+	//checkCudaErrors( cudaDeviceSynchronize() );
 	
 	// p_0 = r_0
 	_gpu_vector_op_<<< nBlocks, nThreads >>>( NONE,  1.0f, 0.0f, d_r, NULL, d_p, dim );
-	checkCudaErrors( cudaDeviceSynchronize() );
+	//checkCudaErrors( cudaDeviceSynchronize() );
 
 	// CG needs max dim iterations
 	int i = 0;

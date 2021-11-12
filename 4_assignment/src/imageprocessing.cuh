@@ -1,5 +1,5 @@
 #pragma once
-#define KERNEL_SIZE 9
+#define KERNEL_SIZE 15
 #define TILE_SIZE 32
 #define BLOCK_SIZE (TILE_SIZE + KERNEL_SIZE - 1)
 
