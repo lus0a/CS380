@@ -24,18 +24,4 @@
       <UniqueIdentifier>{8D8ECC63-384F-3ACA-A980-3E3CCB7A57E8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\matrixkernels.cuh">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\helper_cuda.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\helper_string.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\timer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-  </ItemGroup>
 </Project>

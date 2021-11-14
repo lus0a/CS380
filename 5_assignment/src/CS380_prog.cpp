@@ -349,7 +349,7 @@ float reduceSUM(float* d_a, float* d_b, int dim) {
 		returns SUM[d_a * d_b] 
 	*/
 
-	float sum = 0;
+	float sum = 0.0f;
 	for (int i=0; i<dim; i++){
 		sum += d_a[i]*d_b[i];
 	}
@@ -449,14 +449,14 @@ int main(int argc, char** argv)
 	// PARAMETERS: 
 	int matrixSet;
 	//matrixSet = 0;			// set this to 0 for the image deblurring; 
-	matrixSet = 16;		// set this to 16, 64, 200 for the other matrices
+	//matrixSet = 16;		// set this to 16, 64, 200 for the other matrices
 	//matrixSet = 64;										
-	//matrixSet = 200;								
+	matrixSet = 200;								
 
 	// unblurred input image
 	std::string inputImageFilename;			// set this to a valid png filename
-	inputImageFilename = "bigben_small";
-	//inputImageFilename = "bigben_med";
+	//inputImageFilename = "bigben_small";
+	inputImageFilename = "bigben_med";
 	//inputImageFilename = "peppers_small";
 	//inputImageFilename = "peppers_med";
 	//inputImageFilename = "lichtenstein_small";	

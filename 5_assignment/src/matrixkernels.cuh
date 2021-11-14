@@ -18,6 +18,9 @@ __global__ void _gpu_vector_op_( int op, float fac0, float fac1, float *a, float
 
 // matrix vector multiplication: x = A*b op c
 __global__ void _gpu_matrix_vector_( int op, float *A, float *b, float *c, float *x, int dim );
+
+__global__ void _gpu_vector_reduce_(int op, float* g_data, int n);
+//__global__ void _gpu_vector_reduce_(float* g_data, int n);
 	
 // d_x = SUM[d_a * d_b]
 float gpuReduceSUM( float* d_a, float *d_b, float* d_x, int dim, int nBlocks, int nThreads );

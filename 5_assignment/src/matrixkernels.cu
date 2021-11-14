@@ -1,6 +1,13 @@
 #include <iostream>
 #include "matrixkernels.cuh"
 #include "helper_cuda.h"
+#include <cuda_runtime.h>
+#include <device_launch_parameters.h>
+#include <cuda_runtime_api.h>
+#include <crt/device_functions.h>
+
+#include <cuda.h>
+#include "helper_string.h"
 
 extern "C"
 int iDivUp( int a, int b ){
@@ -71,9 +78,51 @@ _gpu_matrix_vector_( int op, float *A, float *b, float *c, float *x, int dim )
 		HINT: remember to safeguard the index (the thread id might be larger than the array size)!
 		-> if the thread index is >= dim return!
 	*/
-	extern __shared__ float shared_A[];
+	//extern __shared__ float shared_A[];
+	//extern __shared__ float shared_b[];
+	//extern __shared__ float shared_c[];
+
+	//int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	//int Nloop = dim/blockDim.x + 1;
+	//for (int i=0; i<Nloop; i++)
+	//{
+	//	int loopIdx= i*blockDim.x + threadIdx.x;
+	//	if (loopIdx < dim)
+	//	{
+	//		shared_b[loopIdx] = b[loopIdx]; //load b into shared memory
+	//		shared_c[loopIdx] = c[loopIdx]; //load c into shared memory
+	//		for (int j=0; j<dim; j++) //load A into shared memory
+	//		{
+	//			int colIdx = j*dim + loopIdx;
+	//			shared_A[colIdx]=A[colIdx];
+	//		}
+	//	}
+	//}
+	//__syncthreads();
+	//if (idx >= dim) return;
+	//float out = 0.0f;
+	//for (int i=0; i<dim; i++)
+	//{
+	//	out += shared_A[idx * dim + i] * shared_b[i];
+	//}
+	//switch(op){
+	//	case(-1): // NONE 
+	//		x[idx] = out;
+	//		break;
+	//	case(0):  // ADD 
+	//		x[idx] = out + shared_c[idx];
+	//		break;
+	//	case(1):  // SUB 
+	//		x[idx] = out - shared_c[idx];
+	//		break;
+	//	case(2):  // DOT PRODUCT
+	//		x[idx] = out * shared_c[idx];
+	//		break;
+	//}
+	// 
+	// 
+	
 	extern __shared__ float shared_b[];
-	extern __shared__ float shared_c[];
 
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	int Nloop = dim/blockDim.x + 1;
@@ -83,12 +132,6 @@ _gpu_matrix_vector_( int op, float *A, float *b, float *c, float *x, int dim )
 		if (loopIdx < dim)
 		{
 			shared_b[loopIdx] = b[loopIdx]; //load b into shared memory
-			shared_c[loopIdx] = c[loopIdx]; //load c into shared memory
-			for (int j=0; j<dim; j++) //load A into shared memory
-			{
-				int colIdx = j*dim + loopIdx;
-				shared_A[colIdx]=A[colIdx];
-			}
 		}
 	}
 	__syncthreads();
@@ -96,20 +139,20 @@ _gpu_matrix_vector_( int op, float *A, float *b, float *c, float *x, int dim )
 	float out = 0.0f;
 	for (int i=0; i<dim; i++)
 	{
-		out += shared_A[idx * dim + i] * shared_b[i];
+		out += A[idx * dim + i] * shared_b[i];
 	}
 	switch(op){
 		case(-1): // NONE 
 			x[idx] = out;
 			break;
 		case(0):  // ADD 
-			x[idx] = out + shared_c[idx];
+			x[idx] = out + c[idx];
 			break;
 		case(1):  // SUB 
-			x[idx] = out - shared_c[idx];
+			x[idx] = out - c[idx];
 			break;
 		case(2):  // DOT PRODUCT
-			x[idx] = out * shared_c[idx];
+			x[idx] = out * c[idx];
 			break;
 	}
 }
@@ -148,6 +191,31 @@ _gpu_vector_reduce_(int op, float *g_data, int n){
         g_data[blockIdx.x] = partialSum[tx];
     }
 }
+//__global__
+//void _gpu_vector_reduce_(float* d_x, int dim) {
+//
+//	extern __shared__ float partialSum[];
+//	int tx = threadIdx.x;
+//	int idx = blockDim.x * blockIdx.x + threadIdx.x;
+//	// For thread ids greater than data space
+//	if (idx < dim) {
+//		partialSum[tx] = d_x[idx];
+//	}
+//	else
+//		partialSum[idx] = 0;// Case of extra threads above dim
+//	__syncthreads();
+//
+//	for (unsigned int i = blockDim.x / 2; i > 0; i >>= 1) {
+//		if (tx < i) {
+//			partialSum[tx] += partialSum[tx + i];
+//		}
+//		__syncthreads();
+//	}
+//
+//	if (tx == 0) {
+//		d_x[blockIdx.x] = partialSum[0];
+//	}
+//}
 
 
 // returns SUM[d_a * d_b]
@@ -168,7 +236,7 @@ float gpuReduceSUM( float* d_a, float *d_b, float* d_x, int dim, int nBlocks, in
 
 	checkCudaErrors( cudaDeviceSynchronize() );
 
-	_gpu_vector_reduce_<<<nBlocks, nThreads>>>(CL_ADD, d_x, dim);
+	_gpu_vector_reduce_<<<nBlocks, nThreads, dim * sizeof(float)>>>(CL_ADD, d_x, dim);
 
 	checkCudaErrors( cudaDeviceSynchronize() );
 	
@@ -196,7 +264,7 @@ void multiplyMatrixVector( float *h_A, float *h_a, float *h_x, int dim )
 	// x = A*a
 	int nThreads = 128;
 	int nBlocks = iDivUp( dim, nThreads );
-	_gpu_matrix_vector_<<< nBlocks, nThreads, 0 >>>( NONE, d_A, d_a, NULL, d_x, dim );
+	_gpu_matrix_vector_<<< nBlocks, nThreads, dim * sizeof(float) >>>( NONE, d_A, d_a, NULL, d_x, dim );
 	checkCudaErrors( cudaDeviceSynchronize() );
 
 	// copy solution from device to host
@@ -238,17 +306,17 @@ void computeConjugateGradientGPU( float *h_A, float *h_b, float *h_x, int dim, f
 	// init CG
 	// ALGORITHM: r_0 = b-Ax_0
 	// r_0 = Ax_0 - b
-	_gpu_matrix_vector_<<< nBlocks, nThreads, 0 >>>( CL_SUB, d_A, d_x, d_b, d_r, dim );
-	//checkCudaErrors( cudaDeviceSynchronize() );
+	_gpu_matrix_vector_<<< nBlocks, nThreads, dim * sizeof(float) >>>( CL_SUB, d_A, d_x, d_b, d_r, dim );
+	checkCudaErrors( cudaDeviceSynchronize() );
 	
 
 	// r_0 = -r_0
 	_gpu_vector_op_<<< nBlocks, nThreads >>>( NONE, -1.0f, 0.0f, d_r, NULL, d_r, dim );
-	//checkCudaErrors( cudaDeviceSynchronize() );
+	checkCudaErrors( cudaDeviceSynchronize() );
 	
 	// p_0 = r_0
 	_gpu_vector_op_<<< nBlocks, nThreads >>>( NONE,  1.0f, 0.0f, d_r, NULL, d_p, dim );
-	//checkCudaErrors( cudaDeviceSynchronize() );
+	checkCudaErrors( cudaDeviceSynchronize() );
 
 	// CG needs max dim iterations
 	int i = 0;
@@ -271,7 +339,7 @@ void computeConjugateGradientGPU( float *h_A, float *h_b, float *h_x, int dim, f
 		}
 		
 		// q_k = A*p_k
-		_gpu_matrix_vector_<<< nBlocks, nThreads, 0 >>>( NONE, d_A, d_p, NULL, d_q, dim );
+		_gpu_matrix_vector_<<< nBlocks, nThreads, dim * sizeof(float) >>>( NONE, d_A, d_p, NULL, d_q, dim );
 		checkCudaErrors( cudaDeviceSynchronize() );
 		
 		// alpha_k = rho_k / sum(p_k * q_k)
