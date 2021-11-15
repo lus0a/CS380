@@ -154,7 +154,22 @@ _gpu_vector_reduce_(int op, float *g_data, int n){
  //   if (tx == 0){
  //       g_data[blockIdx.x] = partialSum[tx];
  //   }
+ 
 
+	extern __shared__ int sdata[];
+	unsigned int tid = threadIdx.x;
+	unsigned int i = blockIdx.x*(blockDim.x*2) + threadIdx.x;
+	sdata[tid] = g_data[i] + g_data[i+blockDim.x];
+	__syncthreads();
+	for (unsigned int s=blockDim.x/2; s>0; s>>=1) {
+		if (tid < s) {
+			sdata[tid] += sdata[tid + s];
+		}
+		__syncthreads();
+	}
+	if (tid == 0) g_data[blockIdx.x] = sdata[0];
+
+/*
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	for (int s = 1; s < n; s *= 2)
 	{
@@ -170,7 +185,7 @@ _gpu_vector_reduce_(int op, float *g_data, int n){
 			}
 		}
 	}
-
+*/
 }
 
 
