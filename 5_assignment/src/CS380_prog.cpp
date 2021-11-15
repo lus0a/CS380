@@ -359,6 +359,7 @@ float reduceSUM(float* d_a, float* d_b, int dim) {
 
 void computeConjugateGradientCPU(float* h_A, float* h_b, float* h_x, int dim, float errorTolerance)
 {
+	// computeConjugateGradientCPU(h_A, h_b, h_x_reference, dim, errorTolerance);
 	float alpha, beta, rho = 0;
 	float* h_r;
 	float* h_p;
@@ -371,7 +372,11 @@ void computeConjugateGradientCPU(float* h_A, float* h_b, float* h_x, int dim, fl
 	// init CG
 	// ALGORITHM: r_0 = b-Ax_0
 	// r_0 = Ax_0 - b
+
 	matrix_vector(CL_SUB, h_A, h_x, h_b, h_r, dim);
+
+	float rhob_cpu = reduceSUM(h_b, h_b, dim);
+	printf("\n r_cpu is %f\n", rhob_cpu);
 
 	// r_0 = -r_0
 	vector_op(NONE, -1.0f, 0.0f, h_r, NULL, h_r, dim);
@@ -382,6 +387,7 @@ void computeConjugateGradientCPU(float* h_A, float* h_b, float* h_x, int dim, fl
 	// CG needs max dim iterations
 	int i = 0;
 	float minRho = 1000000000;
+	
 	for (i = 0; i < dim; i++) {
 
 		// rho_k = sum(r_k * r_k)
@@ -391,7 +397,7 @@ void computeConjugateGradientCPU(float* h_A, float* h_b, float* h_x, int dim, fl
 			minRho = rho;
 		}
 		
-		std::cout << "iteration #" << i << ", with rho = " << rho << "          " << '\r' << std::flush;
+		std::cout << "iteration #" << i << ", with rho_cpu = " << rho << "          " << '\r' << std::endl;
 		// check here for criterion
 		if (rho < errorTolerance) {
 			break;
@@ -448,10 +454,10 @@ int main(int argc, char** argv)
 	
 	// PARAMETERS: 
 	int matrixSet;
-	//matrixSet = 0;			// set this to 0 for the image deblurring; 
+	matrixSet = 0;			// set this to 0 for the image deblurring; 
 	//matrixSet = 16;		// set this to 16, 64, 200 for the other matrices
 	//matrixSet = 64;										
-	matrixSet = 200;								
+	//matrixSet = 200;								
 
 	// unblurred input image
 	std::string inputImageFilename;			// set this to a valid png filename
@@ -572,11 +578,20 @@ int main(int argc, char** argv)
 		h_x = new float[dim];
 		h_x_reference = new float[dim];
 		memset(h_x, 0, dim * sizeof(float));
+		for (int i = 0; i < dim; i++)
+		{
+			h_x_reference[i] = 0.0f;
+		}
 
 		StartTimer();
 		// find h_x where h_A * h_x = h_b
 		float errorTolerance = 0.0000001f * dim;
 		
+		float rhob_cpu = reduceSUM(h_x_reference, h_x_reference, dim);
+		printf("\n rhob_cpu is %f\n", rhob_cpu);
+		float rhob_gpu = reduceSUM(h_x, h_x, dim);
+		printf("\n rhob_gpu is %f\n", rhob_gpu);
+
 		computeConjugateGradientCPU(h_A, h_b, h_x_reference, dim, errorTolerance);
 		computeConjugateGradientGPU(h_A, h_b, h_x, dim, errorTolerance);
 
@@ -659,7 +674,7 @@ int main(int argc, char** argv)
 		while ( (!deblurredImageDisplay.is_closed()) && (!blurredImageDisplay.is_closed()) && (!inputImageDisplay.is_closed())){
 		}
 
-		}
+	}
 
 	delete[] h_A;
 	delete[] h_x;
