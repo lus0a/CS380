@@ -375,8 +375,8 @@ void computeConjugateGradientCPU(float* h_A, float* h_b, float* h_x, int dim, fl
 
 	matrix_vector(CL_SUB, h_A, h_x, h_b, h_r, dim);
 
-	float rhob_cpu = reduceSUM(h_b, h_b, dim);
-	printf("\n r_cpu is %f\n", rhob_cpu);
+	//float rhob_cpu = reduceSUM(h_b, h_b, dim);
+	//printf("\n r_cpu is %f\n", rhob_cpu);
 
 	// r_0 = -r_0
 	vector_op(NONE, -1.0f, 0.0f, h_r, NULL, h_r, dim);
@@ -583,20 +583,23 @@ int main(int argc, char** argv)
 			h_x_reference[i] = 0.0f;
 		}
 
-		StartTimer();
 		// find h_x where h_A * h_x = h_b
 		float errorTolerance = 0.0000001f * dim;
 		
-		float rhob_cpu = reduceSUM(h_x_reference, h_x_reference, dim);
-		printf("\n rhob_cpu is %f\n", rhob_cpu);
-		float rhob_gpu = reduceSUM(h_x, h_x, dim);
-		printf("\n rhob_gpu is %f\n", rhob_gpu);
+		//float rhob_cpu = reduceSUM(h_x_reference, h_x_reference, dim);
+		//printf("\n rhob_cpu is %f\n", rhob_cpu);
+		//float rhob_gpu = reduceSUM(h_x, h_x, dim);
+		//printf("\n rhob_gpu is %f\n", rhob_gpu);
 
+		StartTimer();
 		computeConjugateGradientCPU(h_A, h_b, h_x_reference, dim, errorTolerance);
-		computeConjugateGradientGPU(h_A, h_b, h_x, dim, errorTolerance);
-
 		double t = GetTimer();
-		std::cout << "elapsed time: " << t << "ms" << std::endl;
+		std::cout << "CPU elapsed time: " << t << "ms" << std::endl;
+
+		StartTimer();
+		computeConjugateGradientGPU(h_A, h_b, h_x, dim, errorTolerance);
+		t = GetTimer();
+		std::cout << "GPU elapsed time: " << t << "ms" << std::endl;
 
 		// compute the error
 		std::cout << "CPU" << std::endl;

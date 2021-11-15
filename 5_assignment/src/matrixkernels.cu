@@ -82,94 +82,83 @@ _gpu_matrix_vector_( int op, float *A, float *b, float *c, float *x, int dim )
 	*/
 	// (CL_SUB, d_A, d_x, d_b, d_r, dim);
 	
-	extern __shared__ float shared_b[];
+	//extern __shared__ float shared_b[];
+
+	//int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	//int Nloop = dim/blockDim.x + 1;
+	//for (int i=0; i<Nloop; i++)
+	//{
+	//	int loopIdx= i*blockDim.x + threadIdx.x;
+	//	if (loopIdx < dim)
+	//	{
+	//		shared_b[loopIdx] = b[loopIdx]; //load b into shared memory
+	//	}
+	//}
+	//__syncthreads();
+	//if (idx >= dim) return;
+	//float out = 0.0f;
+	//for (int i=0; i<dim; i++)
+	//{
+	//	out += A[idx * dim + i] * shared_b[i];
+	//}
+	//switch(op){
+	//	case(-1): // NONE 
+	//		x[idx] = out;
+	//		break;
+	//	case(0):  // ADD 
+	//		x[idx] = out + c[idx];
+	//		break;
+	//	case(1):  // SUB 
+	//		x[idx] = out - c[idx];
+	//		break;
+	//	case(2):  // DOT PRODUCT
+	//		x[idx] = out * c[idx];
+	//		break;
+	//}
 
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	int Nloop = dim/blockDim.x + 1;
-	for (int i=0; i<Nloop; i++)
-	{
-		int loopIdx= i*blockDim.x + threadIdx.x;
-		if (loopIdx < dim)
-		{
-			shared_b[loopIdx] = b[loopIdx]; //load b into shared memory
-		}
-	}
-	__syncthreads();
 	if (idx >= dim) return;
 	float out = 0.0f;
-	for (int i=0; i<dim; i++)
+	for (int i = 0; i < dim; i++)
 	{
-		out += A[idx * dim + i] * shared_b[i];
+		out += A[idx * dim + i] * b[i];
 	}
-	switch(op){
-		case(-1): // NONE 
-			x[idx] = out;
-			break;
-		case(0):  // ADD 
-			x[idx] = out + c[idx];
-			break;
-		case(1):  // SUB 
-			x[idx] = out - c[idx];
-			break;
-		case(2):  // DOT PRODUCT
-			x[idx] = out * c[idx];
-			break;
+	switch (op) {
+	case(-1): // NONE 
+		x[idx] = out;
+		break;
+	case(0):  // ADD 
+		x[idx] = out + c[idx];
+		break;
+	case(1):  // SUB 
+		x[idx] = out - c[idx];
+		break;
+	case(2):  // DOT PRODUCT
+		x[idx] = out * c[idx];
+		break;
 	}
+
 }
 
 
 __global__ void
 _gpu_vector_reduce_(int op, float *g_data, int n){
- //   // figure out exponent of next larger power of 2
- //   int exponent = ceilf(log2f(n));
- //   // calculate next larger power of 2
- //   int size = (int)powf(2, exponent);
- //   extern __shared__ float partialSum[];
-
- //   int tx = threadIdx.x;
- //   
- //   if (tx < n){
- //       partialSum[tx] = g_data[tx];
- //   }
-
-	///*int i = tx + blockIdx.x * blockDim.x;
-	//if (i < n) {
-	//	partialSum[tx] = g_data[i];
-	//}*/
-
- //   for (int stride = size / 2; stride > 0; stride >>= 1){
- //       __syncthreads();
-
- //       if ((tx < stride) && (tx + stride) < n){
-	//		switch(op){
-	//			case(0): // ADD
-	//				partialSum[tx] += partialSum[tx + stride];
-	//				break;
-	//			case(2): // MULT
-	//				partialSum[tx] *= partialSum[tx + stride];
-	//		} 
- //       }
- //   }
-
- //   if (tx == 0){
- //       g_data[blockIdx.x] = partialSum[tx];
- //   }
  
 
-	extern __shared__ int sdata[];
-	unsigned int tid = threadIdx.x;
-	unsigned int i = blockIdx.x*(blockDim.x*2) + threadIdx.x;
-	sdata[tid] = g_data[i] + g_data[i+blockDim.x];
-	__syncthreads();
-	for (unsigned int s=blockDim.x/2; s>0; s>>=1) {
-		if (tid < s) {
-			sdata[tid] += sdata[tid + s];
-		}
-		__syncthreads();
-	}
-	if (tid == 0) g_data[blockIdx.x] = sdata[0];
+	//extern __shared__ float sdata[];
+	//unsigned int tid = threadIdx.x;
+	//unsigned int i = blockIdx.x*blockDim.x + threadIdx.x;
+	//sdata[tid] = g_data[i];
+	//__syncthreads();
+	//for (unsigned int s=blockDim.x/2; s>0; s>>=1) {
+	//	if (tid < s) {
+	//		sdata[tid] += sdata[tid + s];
+	//	}
+	//	__syncthreads();
+	//}
+	//if (tid == 0) g_data[blockIdx.x] = sdata[0];
 
-/*
+
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	for (int s = 1; s < n; s *= 2)
 	{
@@ -185,7 +174,7 @@ _gpu_vector_reduce_(int op, float *g_data, int n){
 			}
 		}
 	}
-*/
+
 }
 
 
@@ -204,16 +193,16 @@ float gpuReduceSUM( float* d_a, float *d_b, float* d_x, int dim, int nBlocks, in
 	float sum = 0.0f;
 	_gpu_vector_op_<<<nBlocks, nThreads>>>(CL_MULT, 1.0f, 1.0f, d_a, d_b, d_x, dim);
 	checkCudaErrors( cudaMemcpy( &sum, d_x, 1 * sizeof( float ), cudaMemcpyDeviceToHost ) );
-	printf("sum is %f \n", sum);
+	//printf("sum is %f \n", sum);
 
 	checkCudaErrors( cudaDeviceSynchronize() );
 
-	_gpu_vector_reduce_<<<nBlocks, nThreads, dim * sizeof(float)>>>(CL_ADD, d_x, dim);
+	_gpu_vector_reduce_<<<nBlocks, nThreads, nThreads * sizeof(float)>>>(CL_ADD, d_x, dim);
 
 	checkCudaErrors( cudaDeviceSynchronize() );
 	
 	checkCudaErrors( cudaMemcpy( &sum, d_x, 1 * sizeof( float ), cudaMemcpyDeviceToHost ) );
-	printf("sum is %f \n", sum);
+	//printf("sum is %f \n", sum);
 	return sum;
 }
 
@@ -281,8 +270,8 @@ void computeConjugateGradientGPU( float *h_A, float *h_b, float *h_x, int dim, f
 	_gpu_matrix_vector_<<< nBlocks, nThreads, dim * sizeof(float) >>>( CL_SUB, d_A, d_x, d_b, d_r, dim );
 	checkCudaErrors( cudaDeviceSynchronize() );
 
-	float rhob_gpu = gpuReduceSUM(d_b, d_b, d_tmp, dim, nBlocks, nThreads);
-	printf("\n r_gpu is %f\n", rhob_gpu);
+	//float rhob_gpu = gpuReduceSUM(d_b, d_b, d_tmp, dim, nBlocks, nThreads);
+	//printf("\n r_gpu is %f\n", rhob_gpu);
 
 	// r_0 = -r_0
 	_gpu_vector_op_<<< nBlocks, nThreads >>>( NONE, -1.0f, 0.0f, d_r, NULL, d_r, dim );
