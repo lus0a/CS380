@@ -142,35 +142,42 @@ _gpu_matrix_vector_( int op, float *A, float *b, float *c, float *x, int dim )
 
 
 __global__ void
-_gpu_vector_reduce_(int op, float *g_data, int n){
+_gpu_vector_reduce_(int op, float *d_x, int dim){
  
 
-	//extern __shared__ float sdata[];
-	//unsigned int tid = threadIdx.x;
-	//unsigned int i = blockIdx.x*blockDim.x + threadIdx.x;
-	//sdata[i] = g_data[i];
+	//extern __shared__ float temp[];
+	//unsigned int local_idx = threadIdx.x;
+	//unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
+	//if (idx < dim) {
+	//	temp[local_idx] = d_x[idx];
+	//}
+	//else {
+	//	temp[local_idx] = 0;
+	//}
 	//__syncthreads();
-	//for (unsigned int s=blockDim.x/2; s>0; s>>=1) {
-	//	if (tid < s) {
-	//		sdata[tid] += sdata[tid + s];
-	//	}
+	//for (unsigned int s = 1; s < blockDim.x; s*=2)
+	//{
+	//	int index = 2 * s * threadIdx.x;
+	//	if (local_idx % (2 * s) == 0)
+	//		temp[local_idx] += temp[local_idx + s];
 	//	__syncthreads();
 	//}
-	//if (tid == 0) g_data[blockIdx.x] = sdata[0];
+	//if (local_idx == 0)
+	//	d_x[blockIdx.x] = temp[0];
 
 
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	for (int s = 1; s < n; s *= 2)
+	for (int s = 1; s < dim; s *= 2)
 	{
-		if (idx % (2 * s) == 0 && idx + s < n)
+		if (idx % (2 * s) == 0 && idx + s < dim)
 		{
 			switch (op)
 			{
 				case(0):
-					g_data[idx] += g_data[idx + s];
+					d_x[idx] += d_x[idx + s];
 					break;
 				case(2):
-					g_data[idx] *= g_data[idx + s];
+					d_x[idx] *= d_x[idx + s];
 			}
 		}
 	}
@@ -197,7 +204,8 @@ float gpuReduceSUM( float* d_a, float *d_b, float* d_x, int dim, int nBlocks, in
 
 	checkCudaErrors( cudaDeviceSynchronize() );
 
-	_gpu_vector_reduce_<<<nBlocks, nThreads, dim * sizeof(float)>>>(CL_ADD, d_x, dim);
+	_gpu_vector_reduce_<<<nBlocks, nThreads, nThreads* sizeof(float)>>>(CL_ADD, d_x, dim);
+	//_gpu_vector_reduce_<<<nBlocks, nThreads, dim* sizeof(float)>>>(CL_ADD, d_x, dim);
 
 	checkCudaErrors( cudaDeviceSynchronize() );
 	
