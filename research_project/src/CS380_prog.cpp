@@ -25,6 +25,95 @@
 
 #include <fstream>
 
+// get A matrix from 5 point stencil
+void get_A(float* &A; int dim_grid; int dim_block)
+{ 	//dim_grid = n-2
+	//dim_block = m-2
+	for (int ni=0; ni<dim_grid; ni++)
+	{
+		if (ni>0 && ni<dim_grid-1)
+		{
+			for (int mi=0; mi<dim_block; mi++)
+			{   
+				//D
+				if (mi>0 && mi<dim_block-1)
+				{
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+				}
+				else if (mi==0)
+				{
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+				}
+				else if (mi==dim_block-1)
+				{
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+				}
+				//Left -I
+				A(ni*dim_grid*dim_block*dim_block + (ni-1)*dim_block + mi*dim_grid*dim_block+mi) = -1;
+				//Right -I
+				A(ni*dim_grid*dim_block*dim_block + (ni+1)*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+			}
+		}
+		else if (ni==0)
+		{
+			for (int mi=0; mi<dim_block; mi++)
+			{   
+				//D
+				if (mi>0 && mi<dim_block-1)
+				{
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+				}
+				else if (mi==0)
+				{
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+				}
+				else if (mi==dim_block-1)
+				{
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+				}
+				//Right -I
+				A(ni*dim_grid*dim_block*dim_block + (ni+1)*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+			}	
+		}
+		else if (ni==dim_grid-1)
+		{
+			for (int mi=0; mi<dim_block; mi++)
+			{   
+				//D
+				if (mi>0 && mi<dim_block-1)
+				{
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+				}
+				else if (mi==0)
+				{
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+				}
+				else if (mi==dim_block-1)
+				{
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
+					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+				}
+				//Left -I
+				A(ni*dim_grid*dim_block*dim_block + (ni-1)*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+			}	
+		}
+	}
+}
+
+
+
+
 
 enum MAJORITY {
 	ROW_MAJOR = 0,
