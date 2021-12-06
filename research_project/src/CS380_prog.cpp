@@ -26,9 +26,11 @@
 #include <fstream>
 
 // get A matrix from 5 point stencil
-void get_A(float* &A; int dim_grid; int dim_block)
+void get_A(float *&A, int dim_grid, int dim_block)
 { 	//dim_grid = n-2
 	//dim_block = m-2
+	A = new float[dim_grid * dim_grid * dim_block * dim_block];
+	memset(A, 0, dim_grid*dim_grid*dim_block*dim_block * sizeof(float));
 	for (int ni=0; ni<dim_grid; ni++)
 	{
 		if (ni>0 && ni<dim_grid-1)
@@ -38,24 +40,24 @@ void get_A(float* &A; int dim_grid; int dim_block)
 				//D
 				if (mi>0 && mi<dim_block-1)
 				{
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi] = 4;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1] = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1] = -1;
 				}
 				else if (mi==0)
 				{
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi] = 4;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1] = -1;
 				}
 				else if (mi==dim_block-1)
 				{
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi] = 4;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1] = -1;
 				}
 				//Left -I
-				A(ni*dim_grid*dim_block*dim_block + (ni-1)*dim_block + mi*dim_grid*dim_block+mi) = -1;
+				A[ni*dim_grid*dim_block*dim_block + (ni-1)*dim_block + mi*dim_grid*dim_block+mi] = -1;
 				//Right -I
-				A(ni*dim_grid*dim_block*dim_block + (ni+1)*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+				A[ni*dim_grid*dim_block*dim_block + (ni+1)*dim_block + mi*dim_grid*dim_block+mi] = -1;
 			}
 		}
 		else if (ni==0)
@@ -65,22 +67,22 @@ void get_A(float* &A; int dim_grid; int dim_block)
 				//D
 				if (mi>0 && mi<dim_block-1)
 				{
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi] = 4;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1] = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1] = -1;
 				}
 				else if (mi==0)
 				{
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi] = 4;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1] = -1;
 				}
 				else if (mi==dim_block-1)
 				{
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi] = 4;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1] = -1;
 				}
 				//Right -I
-				A(ni*dim_grid*dim_block*dim_block + (ni+1)*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+				A[ni*dim_grid*dim_block*dim_block + (ni+1)*dim_block + mi*dim_grid*dim_block+mi] = -1;
 			}	
 		}
 		else if (ni==dim_grid-1)
@@ -90,29 +92,53 @@ void get_A(float* &A; int dim_grid; int dim_block)
 				//D
 				if (mi>0 && mi<dim_block-1)
 				{
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi] = 4;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1] = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1] = -1;
 				}
 				else if (mi==0)
 				{
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi] = 4;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi+1] = -1;
 				}
 				else if (mi==dim_block-1)
 				{
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi) = 4;
-					A(ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1) = -1;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi] = 4;
+					A[ni*dim_grid*dim_block*dim_block + ni*dim_block + mi*dim_grid*dim_block+mi-1] = -1;
 				}
 				//Left -I
-				A(ni*dim_grid*dim_block*dim_block + (ni-1)*dim_block + mi*dim_grid*dim_block+mi+1) = -1;
+				A[ni*dim_grid*dim_block*dim_block + (ni-1)*dim_block + mi*dim_grid*dim_block+mi] = -1;
 			}	
 		}
 	}
 }
 
-
-
+void get_b(float*& b, float*& f, int dim_grid, int dim_block)
+{
+	b = new float[dim_grid * dim_block];
+	memset(b, 0, dim_grid * dim_block * sizeof(float));
+	for (int ni = 0; ni < dim_grid; ni++)
+	{
+		//inner line
+		if (ni > 0 && ni < dim_grid - 1)
+		{
+			for (int mi = 0; mi < dim_block; mi++)
+			{
+				//inner elements
+				if (mi > 0 && mi < dim_block - 1)
+				{
+					b[ni * dim_grid + mi] = f[ni * dim_grid + mi];
+				}
+				//left element
+				else if (mi == 0)
+				{
+					b[ni * dim_grid + mi] = b[ni * dim_grid + mi];
+				}
+		}
+		}
+		
+	}
+}
 
 
 enum MAJORITY {
@@ -419,6 +445,17 @@ int main(int argc, char** argv)
 	test matrices. afterwards change the parameter matrixSet to 0
 	and try with different input images!
 	***************************************************************/
+	int dimn = 3;
+	int dimm = 3;
+	get_A(h_A, dimn, dimm);
+	for (int i = 0; i < dimn*dimm; i++)
+	{
+		for (int j = 0; j < dimn * dimm; j++)
+		{
+			std::cout << h_A[i * dimn * dimm + j] << ' ';
+		}
+		std::cout<<std::endl;
+	}
 	
 	// PARAMETERS: 
 	int matrixSet;
