@@ -118,6 +118,7 @@ void get_A(float *&A, int dim_grid, int dim_block)
 float fxy(float x, float y)
 {
 	return exp(x + y/2)*1.25;
+	//return 0;
 }
 
 float exactu(float x, float y)
@@ -130,7 +131,7 @@ void get_b(float*& b, int dim_grid, int dim_block)
 	//dim_grid = n-2
 	//dim_block = m-2
 	b = new float[dim_grid * dim_block];
-	float h=H/dim_grid;
+	float h=H/(dim_grid+1);
 	memset(b, 0, dim_grid * dim_block * sizeof(float));
 	for (int ni = 0; ni < dim_grid; ni++)
 	{
@@ -139,16 +140,16 @@ void get_b(float*& b, int dim_grid, int dim_block)
 		{
 			for (int mi = 0; mi < dim_block; mi++)
 			{
-				b[ni * dim_grid + mi] = -h * h * fxy((mi+1)/(dim_block+1), (ni+1)/(dim_grid+1));
+				b[ni * dim_grid + mi] = -h * h * fxy(float(mi+1)/ float(dim_block+1), float(ni+1)/ float(dim_grid+1));
 				//left element
 				if (mi == 0)
 				{
-					b[ni * dim_grid + mi] += exactu(mi/(dim_block+1), (ni+1)/(dim_grid+1));
+					b[ni * dim_grid + mi] += exactu(float(mi)/ float(dim_block+1), float(ni+1)/ float(dim_grid+1));
 				}
 				//right element
 				else if (mi == dim_block - 1)
 				{
-					b[ni * dim_grid + mi] += exactu((mi+2)/(dim_block+1), (ni+1)/(dim_grid+1));
+					b[ni * dim_grid + mi] += exactu(float(mi+2)/ float(dim_block+1), float(ni+1)/ float(dim_grid+1));
 				}
 			}
 		}
@@ -157,16 +158,21 @@ void get_b(float*& b, int dim_grid, int dim_block)
 		{
 			for (int mi = 0; mi < dim_block; mi++)
 			{
-				b[ni * dim_grid + mi] = -h * h * fxy((mi+1)/(dim_block+1), (ni+1)/(dim_grid+1)) * 1.25;
-				//left element
-				if (mi == 0)
+				b[ni * dim_grid + mi] = -h * h * fxy(float(mi+1)/ float(dim_block+1), float(ni+1)/ float(dim_grid+1));
+				//inner elements
+				if (mi > 0 && mi < dim_block - 1)
 				{
-					b[ni * dim_grid + mi] += exactu(mi/(dim_block+1), (ni+1)/(dim_grid+1)) + exactu((mi+1)/(dim_block+1), ni/(dim_grid+1));
+					b[ni * dim_grid + mi] += exactu(float(mi + 1) / float(dim_block + 1), float(ni)/ float(dim_grid + 1));
+				}
+				//left element
+				else if (mi == 0)
+				{
+					b[ni * dim_grid + mi] += exactu(float(mi)/ float(dim_block+1), float(ni+1)/ float(dim_grid+1)) + exactu(float(mi+1)/ float(dim_block+1), float(ni)/ float(dim_grid+1));
 				}
 				//right element
 				else if (mi == dim_block - 1)
 				{
-					b[ni * dim_grid + mi] += exactu((mi+2)/(dim_block+1), (ni+1)/(dim_grid+1)) + exactu((mi+1)/(dim_block+1), ni/(dim_grid+1));
+					b[ni * dim_grid + mi] += exactu(float(mi+2)/ float(dim_block+1), float(ni+1)/ float(dim_grid+1)) + exactu(float(mi+1)/ float(dim_block+1), float(ni)/ float(dim_grid+1));
 				}
 			}
 		}
@@ -175,16 +181,21 @@ void get_b(float*& b, int dim_grid, int dim_block)
 		{
 			for (int mi = 0; mi < dim_block; mi++)
 			{
-				b[ni * dim_grid + mi] = -h * h * fxy((mi+1)/(dim_block+1), (ni+1)/(dim_grid+1)) * 1.25;
-				//left element
-				if (mi == 0)
+				b[ni * dim_grid + mi] = -h * h * fxy(float(mi+1)/ float(dim_block+1), float(ni+1)/ float(dim_grid+1));
+				//inner elements
+				if (mi > 0 && mi < dim_block - 1)
 				{
-					b[ni * dim_grid + mi] += exactu(mi/(dim_block+1), (ni+1)/(dim_grid+1)) + exactu((mi+1)/(dim_block+1), (ni+2)/(dim_grid+1));
+					b[ni * dim_grid + mi] += exactu(float(mi + 1) / float(dim_block + 1), float(ni + 2) / float(dim_grid + 1));
+				}
+				//left element
+				else if (mi == 0)
+				{
+					b[ni * dim_grid + mi] += exactu(float(mi)/ float((dim_block+1)), float((ni+1))/ float((dim_grid+1))) + exactu(float((mi+1))/ float(dim_block+1), float(ni+2)/ float(dim_grid+1));
 				}
 				//right element
 				else if (mi == dim_block - 1)
 				{
-					b[ni * dim_grid + mi] += exactu((mi+2)/(dim_block+1), (ni+1)/(dim_grid+1)) + exactu((mi+1)/(dim_block+1), (ni+2)/(dim_grid+1));
+					b[ni * dim_grid + mi] += exactu(float(mi+2)/ float(dim_block+1), float(ni+1)/ float(dim_grid+1)) + exactu(float(mi+1)/ float(dim_block+1), float(ni+2)/ float(dim_grid+1));
 				}
 			}
 		}
@@ -484,6 +495,7 @@ int main(int argc, char** argv)
 	unsigned int dim;
 	float* h_A = NULL;
 	float* h_b = NULL;
+	float* h_exactb = NULL;
 	float* h_x = NULL;
 	float* h_x_reference = NULL;
 	
@@ -496,8 +508,8 @@ int main(int argc, char** argv)
 	test matrices. afterwards change the parameter matrixSet to 0
 	and try with different input images!
 	***************************************************************/
-	int dimn = 3;
-	int dimm = 3;
+	int dimn = 10;
+	int dimm = 10;
 	get_A(h_A, dimn, dimm);
 	for (int i = 0; i < dimn*dimm; i++)
 	{
@@ -577,6 +589,8 @@ int main(int argc, char** argv)
 		memset(h_x, 0, dim * sizeof(float));
 		memset(h_x_reference, 0, dim * sizeof(float));
 
+		h_exactb = new float[dim];
+		memset(h_exactb, 0, dim * sizeof(float));
 		// find h_x where h_A * h_x = h_b
 		float errorTolerance = 0.0000001f * dim;
 		
@@ -600,6 +614,17 @@ int main(int argc, char** argv)
 		computeResultError(h_A, h_b, h_x_reference, dim);
 		std::cout << "GPU" << std::endl;
 		computeResultError(h_A, h_b, h_x, dim);
+		int dim_grid = dimn;
+		int dim_block = dimm;
+		for (int ni = 0; ni < dim_grid; ni++)
+		{
+			for (int mi = 0; mi < dim_block; mi++)
+			{
+				h_exactb[ni * dim_grid + mi] = exactu(float(mi + 1)/ float(dim_block + 1), float(ni + 1) / float(dim_grid + 1));
+			}
+		}
+		std::cout << "method_error" << std::endl;
+		computeResultError(h_A, h_b, h_exactb, dim);
 
 	}
 	
