@@ -115,12 +115,22 @@ void get_A(float *&A, int dim_grid, int dim_block)
 	}
 }
 
-void get_b(float*& b, float*& f, int dim_grid, int dim_block)
+float fxy(float x, float y)
+{
+	return exp(x + y/2)*1.25;
+}
+
+float exactu(float x, float y)
+{
+	return exp(x + y/2);
+}
+
+void get_b(float*& b, int dim_grid, int dim_block)
 {
 	//dim_grid = n-2
 	//dim_block = m-2
 	b = new float[dim_grid * dim_block];
-	float h=0.1;
+	float h=H/dim_grid;
 	memset(b, 0, dim_grid * dim_block * sizeof(float));
 	for (int ni = 0; ni < dim_grid; ni++)
 	{
@@ -129,16 +139,16 @@ void get_b(float*& b, float*& f, int dim_grid, int dim_block)
 		{
 			for (int mi = 0; mi < dim_block; mi++)
 			{
-				b[ni * dim_grid + mi] = -h * h * exp((mi+1)/(dim_block+1) + (ni+1)/(dim_grid+1)/2) * 1.25;
+				b[ni * dim_grid + mi] = -h * h * fxy((mi+1)/(dim_block+1), (ni+1)/(dim_grid+1));
 				//left element
 				if (mi == 0)
 				{
-					b[ni * dim_grid + mi] += exp(mi/(dim_block+1) + (ni+1)/(dim_grid+1)/2);
+					b[ni * dim_grid + mi] += exactu(mi/(dim_block+1), (ni+1)/(dim_grid+1));
 				}
 				//right element
 				else if (mi == dim_block - 1)
 				{
-					b[ni * dim_grid + mi] += exp((mi+2)/(dim_block+1) + (ni+1)/(dim_grid+1)/2);
+					b[ni * dim_grid + mi] += exactu((mi+2)/(dim_block+1), (ni+1)/(dim_grid+1));
 				}
 			}
 		}
@@ -147,35 +157,34 @@ void get_b(float*& b, float*& f, int dim_grid, int dim_block)
 		{
 			for (int mi = 0; mi < dim_block; mi++)
 			{
-				b[ni * dim_grid + mi] = -h * h * exp((mi+1)/(dim_block+1) + (ni+1)/(dim_grid+1)/2) * 1.25;
+				b[ni * dim_grid + mi] = -h * h * fxy((mi+1)/(dim_block+1), (ni+1)/(dim_grid+1)) * 1.25;
 				//left element
 				if (mi == 0)
 				{
-					b[ni * dim_grid + mi] += exp(mi/(dim_block+1) + (ni+1)/(dim_grid+1)/2) + exp((mi+1)/(dim_block+1) + ni/(dim_grid+1)/2);
+					b[ni * dim_grid + mi] += exactu(mi/(dim_block+1), (ni+1)/(dim_grid+1)) + exactu((mi+1)/(dim_block+1), ni/(dim_grid+1));
 				}
 				//right element
 				else if (mi == dim_block - 1)
 				{
-					b[ni * dim_grid + mi] += exp((mi+2)/(dim_block+1) + (ni+1)/(dim_grid+1)/2) + exp((mi+1)/(dim_block+1) + ni/(dim_grid+1)/2);
+					b[ni * dim_grid + mi] += exactu((mi+2)/(dim_block+1), (ni+1)/(dim_grid+1)) + exactu((mi+1)/(dim_block+1), ni/(dim_grid+1));
 				}
 			}
 		}
-
 		//top line
 		if (ni == dim_grid - 1)
 		{
 			for (int mi = 0; mi < dim_block; mi++)
 			{
-				b[ni * dim_grid + mi] = -h * h * exp((mi+1)/(dim_block+1) + (ni+1)/(dim_grid+1)/2) * 1.25;
+				b[ni * dim_grid + mi] = -h * h * fxy((mi+1)/(dim_block+1), (ni+1)/(dim_grid+1)) * 1.25;
 				//left element
 				if (mi == 0)
 				{
-					b[ni * dim_grid + mi] += exp(mi/(dim_block+1) + (ni+1)/(dim_grid+1)/2) + exp((mi+1)/(dim_block+1) + (ni+2)/(dim_grid+1)/2);
+					b[ni * dim_grid + mi] += exactu(mi/(dim_block+1), (ni+1)/(dim_grid+1)) + exactu((mi+1)/(dim_block+1), (ni+2)/(dim_grid+1));
 				}
 				//right element
 				else if (mi == dim_block - 1)
 				{
-					b[ni * dim_grid + mi] += exp((mi+2)/(dim_block+1) + (ni+1)/(dim_grid+1)/2) + exp((mi+1)/(dim_block+1) + (ni+2)/(dim_grid+1)/2);
+					b[ni * dim_grid + mi] += exactu((mi+2)/(dim_block+1), (ni+1)/(dim_grid+1)) + exactu((mi+1)/(dim_block+1), (ni+2)/(dim_grid+1));
 				}
 			}
 		}
@@ -502,7 +511,7 @@ int main(int argc, char** argv)
 	get_b(h_b, dimn, dimm);
 	for (int i = 0; i < dimn*dimm; i++)
 	{
-		std::cout << h_A[i] << ' ';
+		std::cout << h_b[i] << ' ';
 	}
 	
 	// PARAMETERS: 
