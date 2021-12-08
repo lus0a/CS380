@@ -515,13 +515,14 @@ int main(int argc, char** argv)
 	}
 	
 	// PARAMETERS: 
-	int matrixSet;
+	int matrixSet = dimn * dimm;
+	dim = matrixSet;
 	//matrixSet = 0;			// set this to 0 for the image deblurring; 
 	//matrixSet = 16;		// set this to 16, 64, 200 for the other matrices
-	matrixSet = 64;										
-	matrixSet = 200;								
+	//matrixSet = 64;										
+	//matrixSet = 200;							
 
-	bool success = true;
+	//bool success = true;
 
 	// query CUDA capabilities
 	if (!queryGPUCapabilitiesCUDA())
@@ -531,39 +532,39 @@ int main(int argc, char** argv)
 	}
 
 
-	// set up matrices
-	switch (matrixSet) {
-	case(16):
-		// load input matrix A and vector b
-		success = readMatrix((char *)"../data/matrices/A16x16.txt", h_A, &dim, ROW_MAJOR);
-		success = success && readMatrix((char *)"../data/matrices/b16x1.txt", h_b);
-		break;
-	case(64):
-		// load input matrix A and vector b
-		success = readMatrix((char *)"../data/matrices/A64x64.txt", h_A, &dim, ROW_MAJOR);
-		success = success && readMatrix((char *)"../data/matrices/b64x1.txt", h_b);
-		break;
-	case(200):
-		// load input matrix A and vector b
-		success = readMatrix((char *)"../data/matrices/A200x200.txt", h_A, &dim, ROW_MAJOR);
-		success = success && readMatrix((char *)"../data/matrices/b200x1.txt", h_b);
-		break;
+	//// set up matrices
+	//switch (matrixSet) {
+	//case(16):
+	//	// load input matrix A and vector b
+	//	success = readMatrix((char *)"../data/matrices/A16x16.txt", h_A, &dim, ROW_MAJOR);
+	//	success = success && readMatrix((char *)"../data/matrices/b16x1.txt", h_b);
+	//	break;
+	//case(64):
+	//	// load input matrix A and vector b
+	//	success = readMatrix((char *)"../data/matrices/A64x64.txt", h_A, &dim, ROW_MAJOR);
+	//	success = success && readMatrix((char *)"../data/matrices/b64x1.txt", h_b);
+	//	break;
+	//case(200):
+	//	// load input matrix A and vector b
+	//	success = readMatrix((char *)"../data/matrices/A200x200.txt", h_A, &dim, ROW_MAJOR);
+	//	success = success && readMatrix((char *)"../data/matrices/b200x1.txt", h_b);
+	//	break;
 
-	default:
-		// init default input matrix A and vector b
-		h_A = new float[16]; h_b = new float[4]; dim = 4;
-		h_A[0] = 6.25f; h_A[4] = 3.5f; h_A[8] = 4.0f; h_A[12] = 5.5f;
-		h_A[1] = 3.5f; h_A[5] = 5.25f; h_A[9] = 0.5f; h_A[13] = 4.5f;
-		h_A[2] = 4.0f; h_A[6] = 0.5f; h_A[10] = 10.0f; h_A[14] = 2.0f;
-		h_A[3] = 5.5f; h_A[7] = 4.5f; h_A[11] = 2.0f; h_A[15] = 7.25f;
-		h_b[0] = 7.0f; h_b[1] = 5.5f; h_b[2] = 11.0f; h_b[3] = 6.75f;
-		break;
-	}
+	//default:
+	//	// init default input matrix A and vector b
+	//	h_A = new float[16]; h_b = new float[4]; dim = 4;
+	//	h_A[0] = 6.25f; h_A[4] = 3.5f; h_A[8] = 4.0f; h_A[12] = 5.5f;
+	//	h_A[1] = 3.5f; h_A[5] = 5.25f; h_A[9] = 0.5f; h_A[13] = 4.5f;
+	//	h_A[2] = 4.0f; h_A[6] = 0.5f; h_A[10] = 10.0f; h_A[14] = 2.0f;
+	//	h_A[3] = 5.5f; h_A[7] = 4.5f; h_A[11] = 2.0f; h_A[15] = 7.25f;
+	//	h_b[0] = 7.0f; h_b[1] = 5.5f; h_b[2] = 11.0f; h_b[3] = 6.75f;
+	//	break;
+	//}
 
-	if (!success) {
-		std::cout << "File input error";
-		return 0;
-	}
+	//if (!success) {
+	//	std::cout << "File input error";
+	//	return 0;
+	//}
 
 	// init CUDA
 	cudaSetDevice(0);

@@ -145,42 +145,42 @@ __global__ void
 _gpu_vector_reduce_(int op, float *d_x, int dim){
  
 
-	//extern __shared__ float temp[];
-	//unsigned int local_idx = threadIdx.x;
-	//unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
-	//if (idx < dim) {
-	//	temp[local_idx] = d_x[idx];
-	//}
-	//else {
-	//	temp[local_idx] = 0;
-	//}
-	//__syncthreads();
-	//for (unsigned int s = 1; s < blockDim.x; s*=2)
-	//{
-	//	int index = 2 * s * threadIdx.x;
-	//	if (local_idx % (2 * s) == 0)
-	//		temp[local_idx] += temp[local_idx + s];
-	//	__syncthreads();
-	//}
-	//if (local_idx == 0)
-	//	d_x[blockIdx.x] = temp[0];
-
-
-	int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	for (int s = 1; s < dim; s *= 2)
-	{
-		if (idx % (2 * s) == 0 && idx + s < dim)
-		{
-			switch (op)
-			{
-				case(0):
-					d_x[idx] += d_x[idx + s];
-					break;
-				case(2):
-					d_x[idx] *= d_x[idx + s];
-			}
-		}
+	extern __shared__ float temp[];
+	unsigned int local_idx = threadIdx.x;
+	unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
+	if (idx < dim) {
+		temp[local_idx] = d_x[idx];
 	}
+	else {
+		temp[local_idx] = 0;
+	}
+	__syncthreads();
+	for (unsigned int s = 1; s < blockDim.x; s*=2)
+	{
+		int index = 2 * s * threadIdx.x;
+		if (local_idx % (2 * s) == 0)
+			temp[local_idx] += temp[local_idx + s];
+		__syncthreads();
+	}
+	if (local_idx == 0)
+		d_x[blockIdx.x] = temp[0];
+
+
+	//int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	//for (int s = 1; s < dim; s *= 2)
+	//{
+	//	if (idx % (2 * s) == 0 && idx + s < dim)
+	//	{
+	//		switch (op)
+	//		{
+	//			case(0):
+	//				d_x[idx] += d_x[idx + s];
+	//				break;
+	//			case(2):
+	//				d_x[idx] *= d_x[idx + s];
+	//		}
+	//	}
+	//}
 
 }
 
@@ -208,7 +208,8 @@ float gpuReduceSUM( float* d_a, float *d_b, float* d_x, int dim, int nBlocks, in
 	//_gpu_vector_reduce_<<<nBlocks, nThreads, dim* sizeof(float)>>>(CL_ADD, d_x, dim);
 
 	checkCudaErrors( cudaDeviceSynchronize() );
-	
+	_gpu_vector_reduce_ << <1, nBlocks, nBlocks * sizeof(float) >> > (CL_ADD, d_x, nBlocks);
+
 	checkCudaErrors( cudaMemcpy( &sum, d_x, 1 * sizeof( float ), cudaMemcpyDeviceToHost ) );
 	//printf("sum is %f \n", sum);
 	return sum;
