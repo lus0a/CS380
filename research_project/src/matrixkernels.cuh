@@ -31,3 +31,6 @@ void multiplyMatrixVector( float *h_A, float *h_a, float *h_x, int dim );
 
 extern "C"
 void computeConjugateGradientGPU( float *h_A, float *h_b, float *h_x, int dim, float errorTolerance);
+
+extern "C"
+void computeGradientDescentGPU(float* h_A, float* h_b, float* h_x, int dim, float errorTolerance);

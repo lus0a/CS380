@@ -493,11 +493,9 @@ void computeGradientDescentCPU(float* h_A, float* h_b, float* h_x, int dim, floa
 	// computeGradientDescentCPU(h_A, h_b, h_x_reference, dim, errorTolerance);
 	float alpha, beta, rho = 0;
 	float* h_r;
-	float* h_p;
 	float* h_q;
 
 	h_r = new float[dim];
-	h_p = new float[dim];
 	h_q = new float[dim];
 	
 	// init CG
@@ -550,7 +548,6 @@ void computeGradientDescentCPU(float* h_A, float* h_b, float* h_x, int dim, floa
 	printf("\nminrho was %f\n", minRho);
 
 	delete[] h_r;
-	delete[] h_p;
 	delete[] h_q;
 }
 
@@ -561,12 +558,10 @@ int main(int argc, char** argv)
 	float* h_A = NULL;
 	float* h_b = NULL;
 	float* h_exactb = NULL;
-	float* h_x = NULL;
-	float* h_x_reference = NULL;
-	
-	float* h_bR = NULL;
-	float* h_bG = NULL;
-	float* h_bB = NULL;
+	float* h_CG_x = NULL;
+	float* h_CG_x_reference = NULL;
+	float* h_GD_x = NULL;
+	float* h_GD_x_reference = NULL;
 
 	/**************************************************************
 	get the conjugate gradient method first running with the
@@ -608,51 +603,21 @@ int main(int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 
-
-	//// set up matrices
-	//switch (matrixSet) {
-	//case(16):
-	//	// load input matrix A and vector b
-	//	success = readMatrix((char *)"../data/matrices/A16x16.txt", h_A, &dim, ROW_MAJOR);
-	//	success = success && readMatrix((char *)"../data/matrices/b16x1.txt", h_b);
-	//	break;
-	//case(64):
-	//	// load input matrix A and vector b
-	//	success = readMatrix((char *)"../data/matrices/A64x64.txt", h_A, &dim, ROW_MAJOR);
-	//	success = success && readMatrix((char *)"../data/matrices/b64x1.txt", h_b);
-	//	break;
-	//case(200):
-	//	// load input matrix A and vector b
-	//	success = readMatrix((char *)"../data/matrices/A200x200.txt", h_A, &dim, ROW_MAJOR);
-	//	success = success && readMatrix((char *)"../data/matrices/b200x1.txt", h_b);
-	//	break;
-
-	//default:
-	//	// init default input matrix A and vector b
-	//	h_A = new float[16]; h_b = new float[4]; dim = 4;
-	//	h_A[0] = 6.25f; h_A[4] = 3.5f; h_A[8] = 4.0f; h_A[12] = 5.5f;
-	//	h_A[1] = 3.5f; h_A[5] = 5.25f; h_A[9] = 0.5f; h_A[13] = 4.5f;
-	//	h_A[2] = 4.0f; h_A[6] = 0.5f; h_A[10] = 10.0f; h_A[14] = 2.0f;
-	//	h_A[3] = 5.5f; h_A[7] = 4.5f; h_A[11] = 2.0f; h_A[15] = 7.25f;
-	//	h_b[0] = 7.0f; h_b[1] = 5.5f; h_b[2] = 11.0f; h_b[3] = 6.75f;
-	//	break;
-	//}
-
-	//if (!success) {
-	//	std::cout << "File input error";
-	//	return 0;
-	//}
-
 	// init CUDA
 	cudaSetDevice(0);
 
 	if (matrixSet != 0) {
 		// matrix application
 		// init the solution to a vector of 0's
-		h_x = new float[dim];
-		h_x_reference = new float[dim];
-		memset(h_x, 0, dim * sizeof(float));
-		memset(h_x_reference, 0, dim * sizeof(float));
+		h_CG_x = new float[dim];
+		h_CG_x_reference = new float[dim];
+		memset(h_CG_x, 0, dim * sizeof(float));
+		memset(h_CG_x_reference, 0, dim * sizeof(float));
+
+		h_GD_x = new float[dim];
+		h_GD_x_reference = new float[dim];
+		memset(h_GD_x, 0, dim * sizeof(float));
+		memset(h_GD_x_reference, 0, dim * sizeof(float));
 
 		h_exactb = new float[dim];
 		memset(h_exactb, 0, dim * sizeof(float));
@@ -665,20 +630,33 @@ int main(int argc, char** argv)
 		//printf("\n rhob_gpu is %f\n", rhob_gpu);
 
 		StartTimer();
-		computeConjugateGradientCPU(h_A, h_b, h_x_reference, dim, errorTolerance);
+		computeConjugateGradientCPU(h_A, h_b, h_CG_x_reference, dim, errorTolerance);
 		double t = GetTimer();
-		std::cout << "CPU elapsed time: " << t << "ms" << std::endl;
-
+		std::cout << "CPU elapsed time of Conjugate Gradient method: " << t << "ms" << std::endl;
 		StartTimer();
-		computeConjugateGradientGPU(h_A, h_b, h_x, dim, errorTolerance);
+		computeConjugateGradientGPU(h_A, h_b, h_CG_x, dim, errorTolerance);
 		t = GetTimer();
-		std::cout << "GPU elapsed time: " << t << "ms" << std::endl;
-
+		std::cout << "GPU elapsed time of Conjugate Gradient method: " << t << "ms" << std::endl;
 		// compute the error
 		std::cout << "CPU" << std::endl;
-		computeResultError(h_A, h_b, h_x_reference, dim);
+		computeResultError(h_A, h_b, h_CG_x_reference, dim);
 		std::cout << "GPU" << std::endl;
-		computeResultError(h_A, h_b, h_x, dim);
+		computeResultError(h_A, h_b, h_CG_x, dim);
+
+		StartTimer();
+		computeGradientDescentCPU(h_A, h_b, h_GD_x_reference, dim, errorTolerance);
+		t = GetTimer();
+		std::cout << "CPU elapsed time of Gradient Descent method: " << t << "ms" << std::endl;
+		StartTimer();
+		computeGradientDescentGPU(h_A, h_b, h_GD_x, dim, errorTolerance);
+		t = GetTimer();
+		std::cout << "GPU elapsed time of Gradient Descent method: " << t << "ms" << std::endl;
+		// compute the error
+		std::cout << "CPU" << std::endl;
+		computeResultError(h_A, h_b, h_GD_x_reference, dim);
+		std::cout << "GPU" << std::endl;
+		computeResultError(h_A, h_b, h_GD_x, dim);
+
 		int dim_grid = dimn;
 		int dim_block = dimm;
 		for (int ni = 0; ni < dim_grid; ni++)
@@ -693,27 +671,20 @@ int main(int argc, char** argv)
 
 	}
 	
-
 	delete[] h_A;
-	delete[] h_x;
+	delete[] h_CG_x;
+	delete[] h_GD_x;
 
-	if (h_x_reference != NULL) {
-		delete[] h_x_reference;
+	if (h_CG_x_reference != NULL) {
+		delete[] h_CG_x_reference;
+	}
+	if (h_GD_x_reference != NULL) {
+		delete[] h_GD_x_reference;
 	}
 
 	if (h_b != NULL) {
 		delete[] h_b;
 	}
-	if (h_bR != NULL) {
-		delete[] h_bR;
-	}
-	if (h_bG != NULL) {
-		delete[] h_bG;
-	}
-	if (h_bB != NULL) {
-		delete[] h_bB;
-	}
-
 	
 	return EXIT_SUCCESS;
 }

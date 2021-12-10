@@ -352,3 +352,94 @@ void computeConjugateGradientGPU( float *h_A, float *h_b, float *h_x, int dim, f
 	checkCudaErrors( cudaFree( d_q ) );
 	checkCudaErrors( cudaFree( d_tmp ) );
 }
+
+extern "C"
+void computeGradientDescentGPU(float* h_A, float* h_b, float* h_x, int dim, float errorTolerance)
+{
+	int nThreads = 128;							// set the number of threads per block to use by default
+	int nBlocks = iDivUp(dim, nThreads);
+
+	float* d_A, * d_b, * d_x, * d_r, * d_q, * d_tmp;
+	float alpha, beta, rho = 0;
+
+	//allocate device memory
+	checkCudaErrors(cudaMalloc((void**)&d_A, dim * dim * sizeof(float)));
+	checkCudaErrors(cudaMalloc((void**)&d_b, dim * sizeof(float)));
+	checkCudaErrors(cudaMalloc((void**)&d_x, dim * sizeof(float)));
+	checkCudaErrors(cudaMalloc((void**)&d_r, dim * sizeof(float)));
+	checkCudaErrors(cudaMalloc((void**)&d_q, dim * sizeof(float)));
+	checkCudaErrors(cudaMalloc((void**)&d_tmp, dim * sizeof(float)));
+
+	// copy host to device
+	checkCudaErrors(cudaMemcpy(d_A, h_A, dim * dim * sizeof(float), cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(d_b, h_b, dim * sizeof(float), cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(d_x, h_x, dim * sizeof(float), cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	// init CG
+	// ALGORITHM: r_0 = b-Ax_0
+	// r_0 = Ax_0 - b
+	_gpu_matrix_vector_ << < nBlocks, nThreads, dim * sizeof(float) >> > (CL_SUB, d_A, d_x, d_b, d_r, dim);
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	//float rhob_gpu = gpuReduceSUM(d_b, d_b, d_tmp, dim, nBlocks, nThreads);
+	//printf("\n r_gpu is %f\n", rhob_gpu);
+
+	// r_0 = -r_0
+	_gpu_vector_op_ << < nBlocks, nThreads >> > (NONE, -1.0f, 0.0f, d_r, NULL, d_r, dim);
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	// CG needs max dim iterations
+	int i = 0;
+	float minRho = 1000000000;
+	for (i = 0; i < dim; i++) {
+
+		// rho_k = sum(r_k * r_k)
+		rho = gpuReduceSUM(d_r, d_r, d_tmp, dim, nBlocks, nThreads);
+		checkCudaErrors(cudaDeviceSynchronize());
+
+		if (minRho > rho) {
+			minRho = rho;
+		}
+
+		// q_k = A*r_k
+		_gpu_matrix_vector_ << < nBlocks, nThreads, dim * sizeof(float) >> > (NONE, d_A, d_r, NULL, d_q, dim);
+		checkCudaErrors(cudaDeviceSynchronize());
+
+		// alpha_k = rho_k / sum(r_k * q_k)
+		alpha = rho / gpuReduceSUM(d_r, d_q, d_tmp, dim, nBlocks, nThreads);
+		checkCudaErrors(cudaDeviceSynchronize());
+
+		// x_(k+1) = x_k + alpha_k * r_k
+		_gpu_vector_op_ << < nBlocks, nThreads >> > (CL_ADD, 1.0f, alpha, d_x, d_r, d_x, dim);
+		checkCudaErrors(cudaDeviceSynchronize());
+
+		//printf("iteration #%d, with rho = %f", i, rho);
+		std::cout << "iteration #" << i << ", with rho_gpu = " << rho << "          " << '\r' << std::endl;
+		// check here for criterion
+		if (rho < errorTolerance) {
+			break;
+		}
+
+		// r_(k+1) = r_k + (-alpha_k * q_k)
+		_gpu_vector_op_ << < nBlocks, nThreads >> > (CL_ADD, 1.0f, -alpha, d_r, d_q, d_r, dim);
+		checkCudaErrors(cudaDeviceSynchronize());
+
+	}
+
+	rho = gpuReduceSUM(d_r, d_r, d_tmp, dim, nBlocks, nThreads);
+
+	printf("\nSolution found at iteration #%d, with rho = %f\n", i, rho);
+	printf("\nminrho was %f\n", minRho);
+
+	// copy solution from device to host
+	checkCudaErrors(cudaMemcpy(h_x, d_x, dim * sizeof(float), cudaMemcpyDeviceToHost));
+
+	// release device memory
+	checkCudaErrors(cudaFree(d_A));
+	checkCudaErrors(cudaFree(d_b));
+	checkCudaErrors(cudaFree(d_x));
+	checkCudaErrors(cudaFree(d_r));
+	checkCudaErrors(cudaFree(d_q));
+	checkCudaErrors(cudaFree(d_tmp));
+}
