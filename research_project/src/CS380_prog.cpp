@@ -488,6 +488,71 @@ void computeConjugateGradientCPU(float* h_A, float* h_b, float* h_x, int dim, fl
 	delete[] h_q;
 }
 
+void computeGradientDescentCPU(float* h_A, float* h_b, float* h_x, int dim, float errorTolerance)
+{
+	// computeGradientDescentCPU(h_A, h_b, h_x_reference, dim, errorTolerance);
+	float alpha, beta, rho = 0;
+	float* h_r;
+	float* h_p;
+	float* h_q;
+
+	h_r = new float[dim];
+	h_p = new float[dim];
+	h_q = new float[dim];
+	
+	// init CG
+	// ALGORITHM: r_0 = b-Ax_0
+	// r_0 = Ax_0 - b
+
+	matrix_vector(CL_SUB, h_A, h_x, h_b, h_r, dim);
+
+	//float rhob_cpu = reduceSUM(h_b, h_b, dim);
+	//printf("\n r_cpu is %f\n", rhob_cpu);
+
+	// r_0 = -r_0
+	vector_op(NONE, -1.0f, 0.0f, h_r, NULL, h_r, dim);
+	
+	// CG needs max dim iterations
+	int i = 0;
+	float minRho = 1000000000;
+	
+	for (i = 0; i < dim; i++) {
+
+		// rho_k = sum(r_k * r_k)
+		rho = reduceSUM(h_r, h_r, dim);
+		
+		if (minRho > rho) {
+			minRho = rho;
+		}
+		
+		// q_k = A*r_k
+		matrix_vector(NONE, h_A, h_r, NULL, h_q, dim);
+
+		// alpha_k = rho_k / sum(r_k * q_k)
+		alpha = rho / reduceSUM(h_r, h_q, dim);
+
+		// x_(k+1) = x_k + alpha_k * r_k
+		vector_op(CL_ADD, 1.0f, alpha, h_x, h_r, h_x, dim);
+
+		std::cout << "iteration #" << i << ", with rho_cpu = " << rho << "          " << '\r' << std::endl;
+		// check here for criterion
+		if (rho < errorTolerance) {
+			break;
+		}
+
+		// r_(k+1) = r_k + (-alpha_k * q_k)
+		vector_op(CL_ADD, 1.0f, -alpha, h_r, h_q, h_r, dim);
+	}
+
+	rho = reduceSUM(h_r, h_r, dim);
+
+	printf("\nSolution found at iteration #%d, with rho = %f\n", i, rho);
+	printf("\nminrho was %f\n", minRho);
+
+	delete[] h_r;
+	delete[] h_p;
+	delete[] h_q;
+}
 
 // entry point
 int main(int argc, char** argv)
