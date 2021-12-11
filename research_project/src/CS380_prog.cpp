@@ -453,7 +453,8 @@ void computeConjugateGradientCPU(float* h_A, float* h_b, float* h_x, int dim, fl
 			minRho = rho;
 		}
 		
-		std::cout << "iteration #" << i << ", with rho_cpu = " << rho << "          " << '\r' << std::endl;
+		//std::cout << "iteration #" << i << ", with rho_cpu = " << rho << "          " << '\r' << std::endl;
+
 		// check here for criterion
 		if (rho < errorTolerance) {
 			break;
@@ -532,7 +533,8 @@ void computeGradientDescentCPU(float* h_A, float* h_b, float* h_x, int dim, floa
 		// x_(k+1) = x_k + alpha_k * r_k
 		vector_op(CL_ADD, 1.0f, alpha, h_x, h_r, h_x, dim);
 
-		std::cout << "iteration #" << i << ", with rho_cpu = " << rho << "          " << '\r' << std::endl;
+		//std::cout << "iteration #" << i << ", with rho_cpu = " << rho << "          " << '\r' << std::endl;
+		
 		// check here for criterion
 		if (rho < errorTolerance) {
 			break;
@@ -568,23 +570,28 @@ int main(int argc, char** argv)
 	test matrices. afterwards change the parameter matrixSet to 0
 	and try with different input images!
 	***************************************************************/
-	int dimn = 10;
-	int dimm = 10;
+	//float h = 0.2;
+	//float h = 0.1;
+	//float h = 0.05;
+	float h = 0.025;
+
+	int dimn = 1 / h - 1;
+	int dimm = dimn;
 	get_A(h_A, dimn, dimm);
-	for (int i = 0; i < dimn*dimm; i++)
-	{
-		for (int j = 0; j < dimn * dimm; j++)
-		{
-			std::cout << h_A[i * dimn * dimm + j] << ' ';
-		}
-		std::cout<<std::endl;
-	}
+	//for (int i = 0; i < dimn*dimm; i++)
+	//{
+	//	for (int j = 0; j < dimn * dimm; j++)
+	//	{
+	//		std::cout << h_A[i * dimn * dimm + j] << ' ';
+	//	}
+	//	std::cout<<std::endl;
+	//}
 	
 	get_b(h_b, dimn, dimm);
-	for (int i = 0; i < dimn*dimm; i++)
-	{
-		std::cout << h_b[i] << ' ';
-	}
+	//for (int i = 0; i < dimn*dimm; i++)
+	//{
+	//	std::cout << h_b[i] << ' ';
+	//}
 	
 	// PARAMETERS: 
 	int matrixSet = dimn * dimm;

@@ -82,61 +82,61 @@ _gpu_matrix_vector_( int op, float *A, float *b, float *c, float *x, int dim )
 	*/
 	// (CL_SUB, d_A, d_x, d_b, d_r, dim);
 	
-	extern __shared__ float shared_b[];
-
-	int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	int Nloop = dim/blockDim.x + 1;
-	for (int i=0; i<Nloop; i++)
-	{
-		int loopIdx= i*blockDim.x + threadIdx.x;
-		if (loopIdx < dim)
-		{
-			shared_b[loopIdx] = b[loopIdx]; //load b into shared memory
-		}
-	}
-	__syncthreads();
-	if (idx >= dim) return;
-	float out = 0.0f;
-	for (int i=0; i<dim; i++)
-	{
-		out += A[idx * dim + i] * shared_b[i];
-	}
-	switch(op){
-		case(-1): // NONE 
-			x[idx] = out;
-			break;
-		case(0):  // ADD 
-			x[idx] = out + c[idx];
-			break;
-		case(1):  // SUB 
-			x[idx] = out - c[idx];
-			break;
-		case(2):  // DOT PRODUCT
-			x[idx] = out * c[idx];
-			break;
-	}
+	//extern __shared__ float shared_b[];
 
 	//int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	//int Nloop = dim/blockDim.x + 1;
+	//for (int i=0; i<Nloop; i++)
+	//{
+	//	int loopIdx= i*blockDim.x + threadIdx.x;
+	//	if (loopIdx < dim)
+	//	{
+	//		shared_b[loopIdx] = b[loopIdx]; //load b into shared memory
+	//	}
+	//}
+	//__syncthreads();
 	//if (idx >= dim) return;
 	//float out = 0.0f;
-	//for (int i = 0; i < dim; i++)
+	//for (int i=0; i<dim; i++)
 	//{
-	//	out += A[idx * dim + i] * b[i];
+	//	out += A[idx * dim + i] * shared_b[i];
 	//}
-	//switch (op) {
-	//case(-1): // NONE 
-	//	x[idx] = out;
-	//	break;
-	//case(0):  // ADD 
-	//	x[idx] = out + c[idx];
-	//	break;
-	//case(1):  // SUB 
-	//	x[idx] = out - c[idx];
-	//	break;
-	//case(2):  // DOT PRODUCT
-	//	x[idx] = out * c[idx];
-	//	break;
+	//switch(op){
+	//	case(-1): // NONE 
+	//		x[idx] = out;
+	//		break;
+	//	case(0):  // ADD 
+	//		x[idx] = out + c[idx];
+	//		break;
+	//	case(1):  // SUB 
+	//		x[idx] = out - c[idx];
+	//		break;
+	//	case(2):  // DOT PRODUCT
+	//		x[idx] = out * c[idx];
+	//		break;
 	//}
+
+	int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (idx >= dim) return;
+	float out = 0.0f;
+	for (int i = 0; i < dim; i++)
+	{
+		out += A[idx * dim + i] * b[i];
+	}
+	switch (op) {
+	case(-1): // NONE 
+		x[idx] = out;
+		break;
+	case(0):  // ADD 
+		x[idx] = out + c[idx];
+		break;
+	case(1):  // SUB 
+		x[idx] = out - c[idx];
+		break;
+	case(2):  // DOT PRODUCT
+		x[idx] = out * c[idx];
+		break;
+	}
 
 }
 
@@ -145,42 +145,42 @@ __global__ void
 _gpu_vector_reduce_(int op, float *d_x, int dim){
  
 
-	extern __shared__ float temp[];
-	unsigned int local_idx = threadIdx.x;
-	unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
-	if (idx < dim) {
-		temp[local_idx] = d_x[idx];
-	}
-	else {
-		temp[local_idx] = 0;
-	}
-	__syncthreads();
-	for (unsigned int s = 1; s < blockDim.x; s*=2)
-	{
-		int index = 2 * s * threadIdx.x;
-		if (local_idx % (2 * s) == 0)
-			temp[local_idx] += temp[local_idx + s];
-		__syncthreads();
-	}
-	if (local_idx == 0)
-		d_x[blockIdx.x] = temp[0];
-
-
-	//int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	//for (int s = 1; s < dim; s *= 2)
-	//{
-	//	if (idx % (2 * s) == 0 && idx + s < dim)
-	//	{
-	//		switch (op)
-	//		{
-	//			case(0):
-	//				d_x[idx] += d_x[idx + s];
-	//				break;
-	//			case(2):
-	//				d_x[idx] *= d_x[idx + s];
-	//		}
-	//	}
+	//extern __shared__ float temp[];
+	//unsigned int local_idx = threadIdx.x;
+	//unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
+	//if (idx < dim) {
+	//	temp[local_idx] = d_x[idx];
 	//}
+	//else {
+	//	temp[local_idx] = 0;
+	//}
+	//__syncthreads();
+	//for (unsigned int s = 1; s < blockDim.x; s*=2)
+	//{
+	//	int index = 2 * s * threadIdx.x;
+	//	if (local_idx % (2 * s) == 0)
+	//		temp[local_idx] += temp[local_idx + s];
+	//	__syncthreads();
+	//}
+	//if (local_idx == 0)
+	//	d_x[blockIdx.x] = temp[0];
+
+
+	int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	for (int s = 1; s < dim; s *= 2)
+	{
+		if (idx % (2 * s) == 0 && idx + s < dim)
+		{
+			switch (op)
+			{
+				case(0):
+					d_x[idx] += d_x[idx + s];
+					break;
+				case(2):
+					d_x[idx] *= d_x[idx + s];
+			}
+		}
+	}
 
 }
 
@@ -304,7 +304,8 @@ void computeConjugateGradientGPU( float *h_A, float *h_b, float *h_x, int dim, f
 		}
 		
 		//printf("iteration #%d, with rho = %f", i, rho);
-		std::cout << "iteration #" << i << ", with rho_gpu = " << rho << "          " << '\r' << std::endl;
+		//std::cout << "iteration #" << i << ", with rho_gpu = " << rho << "          " << '\r' << std::endl;
+
 		// check here for criterion
 		if( rho < errorTolerance) {
 			break;
@@ -415,7 +416,8 @@ void computeGradientDescentGPU(float* h_A, float* h_b, float* h_x, int dim, floa
 		checkCudaErrors(cudaDeviceSynchronize());
 
 		//printf("iteration #%d, with rho = %f", i, rho);
-		std::cout << "iteration #" << i << ", with rho_gpu = " << rho << "          " << '\r' << std::endl;
+		//std::cout << "iteration #" << i << ", with rho_gpu = " << rho << "          " << '\r' << std::endl;
+
 		// check here for criterion
 		if (rho < errorTolerance) {
 			break;
