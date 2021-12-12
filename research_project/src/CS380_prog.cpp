@@ -596,11 +596,7 @@ int main(int argc, char** argv)
 	// PARAMETERS: 
 	int matrixSet = dimn * dimm;
 	dim = matrixSet;
-	//matrixSet = 0;			// set this to 0 for the image deblurring; 
-	//matrixSet = 16;		// set this to 16, 64, 200 for the other matrices
-	//matrixSet = 64;										
-	//matrixSet = 200;							
-
+	std::cout << dim;
 	//bool success = true;
 
 	// query CUDA capabilities
@@ -677,7 +673,46 @@ int main(int argc, char** argv)
 		computeResultError(h_A, h_b, h_exactb, dim);
 
 	}
-	
+
+	std::ofstream myfile;
+	myfile.open("err_CG_x_CPU.txt");
+	for (int i = 0; i < dim; i++)
+	{
+		h_CG_x_reference[i] -= h_exactb[i];
+		myfile << h_CG_x_reference[i] <<"\n";
+	}
+
+	std::ofstream myfile1;
+	myfile1.open("err_CG_x_GPU.txt");
+	for (int i = 0; i < dim; i++)
+	{
+		h_CG_x[i] -= h_exactb[i];
+		myfile1 << h_CG_x[i] << "\n";
+	}
+
+	std::ofstream myfile2;
+	myfile2.open("err_GD_x_CPU.txt");
+	for (int i = 0; i < dim; i++)
+	{
+		h_GD_x_reference[i] -= h_exactb[i];
+		myfile2 << h_GD_x_reference[i] << "\n";
+	}
+
+	std::ofstream myfile3;
+	myfile3.open("err_GD_x_GPU.txt");
+	for (int i = 0; i < dim; i++)
+	{
+		h_GD_x[i] -= h_exactb[i];
+		myfile3 << h_GD_x[i] << "\n";
+	}
+
+	std::ofstream myfile4;
+	myfile4.open("exact.txt");
+	for (int i = 0; i < dim; i++)
+	{
+		myfile4 << h_exactb[i] << "\n";
+	}
+
 	delete[] h_A;
 	delete[] h_CG_x;
 	delete[] h_GD_x;
